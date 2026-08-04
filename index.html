@@ -234,6 +234,139 @@
 </style>
 </head>
 
+<style>
+  /* ============ v2 桌面系统 ============ */
+  #desktop { position:fixed; inset:0; z-index:5; display:none; flex-direction:column; background:#101216; overflow:hidden; }
+  #desktop.show { display:flex; }
+  #wallpaper { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 20%, #1c2333 0%, #0b0d13 70%); overflow:hidden; }
+  #wallpaper::before { content:""; position:absolute; inset:0; background-image:repeating-linear-gradient(115deg, transparent 0 26px, rgba(150,180,220,.05) 26px 27px); animation:rainfall 1.1s linear infinite; }
+  #wallpaper.heavy::before { animation-duration:.45s; background-image:repeating-linear-gradient(115deg, transparent 0 13px, rgba(160,190,230,.12) 13px 14px); }
+  @keyframes rainfall { 0%{transform:translateY(-100vh)} 100%{transform:translateY(100vh)} }
+  #wallpaper.lightning::after { content:""; position:absolute; inset:0; background:#dfe9ff; opacity:0; pointer-events:none; }
+  #wallpaper.lightning.flash::after { animation:lightning .18s steps(2); }
+  @keyframes lightning { 0%{opacity:.22} 50%{opacity:0} 100%{opacity:.1} }
+
+  #icons { position:absolute; top:18px; left:16px; display:flex; flex-direction:column; gap:16px; z-index:2; }
+  .dicon { width:86px; text-align:center; cursor:pointer; padding:8px 4px; border-radius:8px; user-select:none; }
+  .dicon:hover { background:rgba(255,255,255,.08); }
+  .dicon.sel { background:rgba(255,255,255,.14); outline:1px solid rgba(255,255,255,.2); }
+  .dicon .ic { font-size:34px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
+  .dicon .lb { margin-top:5px; font-size:12px; color:#dfe2ea; text-shadow:0 1px 2px #000; }
+
+  #win-layer { position:absolute; inset:0 0 42px 0; z-index:3; overflow:hidden; }
+  .win { position:absolute; min-width:320px; min-height:200px; background:#1d1f24; border:1px solid #33363e; border-radius:9px; box-shadow:0 8px 34px rgba(0,0,0,.55); display:flex; flex-direction:column; overflow:hidden; }
+  .win.focus { border-color:#4c5568; box-shadow:0 10px 44px rgba(0,0,0,.7); }
+  .win.max { border-radius:0; }
+  .win.min { display:none; }
+  .win-bar { display:flex; align-items:center; gap:8px; padding:7px 10px; background:#262a32; border-bottom:1px solid #33363e; cursor:grab; user-select:none; flex:0 0 auto; }
+  .win-bar:active { cursor:grabbing; }
+  .win-bar.dbl { }
+  .win-ico { font-size:15px; }
+  .win-title { flex:1; font-size:13px; color:#cdd3dd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .win-ctrl { display:flex; gap:4px; }
+  .win-ctrl button { width:26px; height:22px; background:#343943; border:1px solid #434a56; border-radius:4px; color:#c8cdd6; font-size:12px; cursor:pointer; line-height:1; }
+  .win-ctrl button:hover { background:#4a5260; }
+  .win-ctrl button.wclose:hover { background:#a03a3a; border-color:#a03a3a; color:#fff; }
+  .win-body { flex:1; display:flex; flex-direction:column; overflow:hidden; background:#e7e4dd; }
+  .win-body > * { flex:1; min-height:0; }
+  .win-body #browser, .win-body #journal { height:100%; }
+  .win-body #journal { position:static; width:100%; border:none; box-shadow:none; }
+
+  #taskbar { position:absolute; left:0; right:0; bottom:0; height:42px; z-index:6; background:rgba(20,22,27,.94); border-top:1px solid #33363e; display:flex; align-items:center; padding:0 8px; gap:6px; }
+  #start-tb { height:30px; padding:0 13px; background:#333a46; border:1px solid #454d5b; color:#dfe3ea; border-radius:6px; font-size:13px; cursor:pointer; }
+  #start-tb:hover { background:#404957; }
+  #tb-apps { flex:1; display:flex; gap:6px; align-items:center; overflow-x:auto; }
+  .tb-app { position:relative; height:30px; padding:0 12px; background:#262a32; border:1px solid #3a3f49; color:#b9c0cb; border-radius:6px; font-size:12.5px; cursor:pointer; white-space:nowrap; }
+  .tb-app:hover { background:#30353f; }
+  .tb-app.active { background:#3d4655; color:#fff; border-color:#566074; }
+  .tb-app .bdg { position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; padding:0 4px; background:#d64545; color:#fff; border-radius:9px; font-size:10.5px; line-height:16px; text-align:center; }
+  #tb-tray { display:flex; align-items:center; gap:9px; color:#aeb6c2; font-size:12.5px; }
+  #tb-eye { font-size:15px; cursor:default; animation:pulse 2.2s infinite; }
+  #tb-eye.on { color:#d9a14a; }
+  @keyframes pulse { 0%,100%{opacity:.45} 50%{opacity:1} }
+  #tb-mute { background:none; border:1px solid #3a3f49; color:#b9c0cb; border-radius:5px; padding:3px 9px; cursor:pointer; font-size:12px; }
+  #tb-clock { font-variant-numeric:tabular-nums; }
+
+  /* 开机 / 代号 / 章节卡 */
+  #boot { position:fixed; inset:0; z-index:120; background:#05060a; display:none; flex-direction:column; align-items:center; justify-content:center; color:#cfd6e2; }
+  #boot.show { display:flex; }
+  #boot .logo { font-size:44px; letter-spacing:.2em; color:#8fa3c4; text-shadow:0 0 26px rgba(120,150,220,.5); }
+  #boot .bar { width:220px; height:3px; background:#232a36; margin-top:26px; overflow:hidden; border-radius:2px; }
+  #boot .bar i { display:block; height:100%; width:0; background:#6f8fc7; animation:bootbar 1.8s ease forwards; }
+  @keyframes bootbar { 0%{width:0} 100%{width:100%} }
+  #name-screen { position:fixed; inset:0; z-index:110; background:rgba(4,5,8,.96); display:none; flex-direction:column; align-items:center; justify-content:center; }
+  #name-screen.show { display:flex; }
+  #name-screen .card { width:min(480px,90vw); background:#14161b; border:1px solid #33363e; padding:34px 38px; text-align:center; }
+  #name-screen h3 { color:#dfe3ea; letter-spacing:.2em; margin-bottom:8px; }
+  #name-screen p { color:#8b93a1; font-size:13.5px; line-height:1.9; margin:10px 0 18px; }
+  #name-screen input { width:100%; padding:11px; background:#0d0f13; border:1px solid #3a3f49; color:#e2e6ed; font-size:15px; text-align:center; outline:none; }
+  #name-screen button { margin-top:16px; padding:10px 40px; background:#2c3a52; border:1px solid #46597a; color:#e5eaf3; cursor:pointer; font-size:14px; }
+  #name-screen button:hover { background:#3a4d6b; }
+
+  #chapter-card { position:fixed; inset:0; z-index:115; background:rgba(3,4,7,.96); display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
+  #chapter-card.show { display:flex; }
+  #chapter-card .cc { max-width:600px; border-left:3px solid #6f8fc7; padding:24px 30px; background:rgba(20,23,30,.6); }
+  #chapter-card .cline { color:#7d8aa3; font-size:13px; letter-spacing:.3em; margin-bottom:10px; }
+  #chapter-card h2 { color:#e6eaf1; font-size:28px; letter-spacing:.2em; margin-bottom:18px; font-weight:normal; }
+  #chapter-card p { color:#aab3c1; line-height:2.1; font-size:14.5px; white-space:pre-line; }
+  #chapter-card button { margin-top:26px; padding:10px 42px; background:transparent; border:1px solid #46597a; color:#cdd6e4; cursor:pointer; letter-spacing:.2em; }
+  #chapter-card button:hover { background:#243048; }
+
+  /* 通知栈 */
+  #notify-stack { position:fixed; right:16px; bottom:52px; z-index:105; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+  .notify { width:min(320px,86vw); background:rgba(24,27,33,.96); border:1px solid #3d4550; border-left:3px solid #8b0f0f; border-radius:8px; padding:12px 14px; color:#d5dbe3; box-shadow:0 6px 22px rgba(0,0,0,.5); cursor:pointer; pointer-events:auto; animation:notifyin .28s ease; }
+  .notify .nt { font-size:13px; color:#8fa3c4; }
+  .notify .nb { font-size:13.5px; margin-top:4px; line-height:1.6; white-space:pre-line; }
+  @keyframes notifyin { from{transform:translateX(40px); opacity:0} to{transform:none; opacity:1} }
+  .notify.out { opacity:0; transform:translateX(30px); transition:.3s; }
+
+  /* 应用视图 */
+  .app-view { flex:1; overflow:auto; background:#e7e4dd; }
+  .win-body .app-view { height:100%; }
+
+  /* 浏览器皮肤升级 */
+  #browser-bar { background:#23262d; }
+  #tabstrip .tab { background:#2b2f37; border-color:#353a44; }
+  #tabstrip .tab.active { background:#1d1f24; color:#f0f1f4; }
+  #addr { border-radius:16px; padding:6px 14px; }
+
+  /* ============ 新站点样式 ============ */
+  .site-records { background:#f2f4f7; }
+  .rec-head { background:#123; }
+  .call-row { display:flex; justify-content:space-between; background:#fff; border:1px solid #e0e4ea; padding:11px 15px; margin-bottom:7px; font-size:13px; color:#333; }
+  .call-row .t { color:#1d5fb8; }
+
+  .site-tieba { background:#f5f6f7; }
+  .tb-head { background:#4f6ef2; color:#fff; padding:9px 16px; font-size:15px; }
+  .tieba-item { background:#fff; border:1px solid #e2e5ea; padding:11px 15px; margin-bottom:8px; font-size:13.5px; line-height:1.8; }
+  .tieba-item b { color:#333; }
+
+  .site-film { background:#17181c; }
+  .film-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; padding:16px; }
+  .film-ph { aspect-ratio:4/3; background:#20232b; border:1px solid #33363e; border-radius:6px; cursor:zoom-in; display:flex; align-items:center; justify-content:center; color:#8b94a5; font-size:26px; position:relative; overflow:hidden; }
+  .film-ph .dt { position:absolute; bottom:4px; left:0; right:0; font-size:10.5px; color:#aeb6c2; background:rgba(0,0,0,.55); padding:2px 0; }
+  .film-ph:hover { outline:2px solid #8b0f0f; }
+
+  .site-wx, .site-gblog, .site-mirror, .site-den { background:#0e1014; }
+  .wx-box { background:#14161b; border:1px solid #2b3038; padding:18px 22px; margin-bottom:12px; color:#c9d1dc; font-size:13.5px; line-height:2; }
+  .wx-box .k { color:#7f9cc9; }
+  .wx-box .warn { color:#d9a14a; }
+
+  .site-alumni { background:#e9e4d8; }
+  .alumni-card { background:#f7f2e4; border:1px solid #cdc3a6; padding:16px 20px; margin-bottom:12px; font-size:13.5px; color:#3d382c; line-height:1.9; }
+
+  .den-msg { background:#101216; border:1px solid #262b34; padding:10px 14px; margin-bottom:8px; color:#aab3c1; font-size:13px; line-height:1.8; }
+  .den-msg .u { color:#8b0f0f; }
+  .den-msg .me { color:#4f6ef2; }
+  .typing { color:#5c6675; font-size:12px; padding:4px 14px; }
+
+  .old-count { font-family:Consolas,monospace; color:#6a5a3a; font-size:12px; }
+  .marquee { color:#8b0f0f; font-size:13px; }
+
+  /* 剧情线索角标 */
+  .clue-mark.story { background:#3a6ea5; color:#fff; }
+</style>
+
 <body>
 
 <div id="title-screen">
@@ -1761,6 +1894,1275 @@ function renderPage() {
   updateJournalBadge();
 }
 
+
+/* ============ v2 新线索（剧情/误导/异常，不影响结局阈值） ============ */
+Object.assign(CLUES, {
+  t1: { type: 'story', ch: 'c3', date: '2008-03-16', title: '被撤稿的报道', text: '旧报扫描库里有记者周方的一篇未刊发原稿《教师之死疑点重重》：苏承生前曾被人威胁，事发前一日到学校财务室核对过账目。稿件被撤，没有见报。' },
+  t2: { type: 'story', ch: 'c2', date: '2026-06-14', title: '通话详单', text: '林晚手机详单：23:46 收到未知号码短信「雨巷见」，23:40 与 23:48 两次主叫阿青。' },
+  t3: { type: 'story', ch: 'c4', date: '2008-12-30', title: '账目缺口', text: '雾山中学 2002-2009 校舍改造工程，预算 480 万、决算 320 万，缺口 160 万标注「待核」。与会议纪要互相印证。' },
+  t4: { type: 'story', ch: 'c2', date: '2026-06-15', title: '贴吧的雨夜', text: '雾山吧居民「雾山老张」：6 月 14 日深夜有人拍他家的窗户，开门没有人。' },
+  t5: { type: 'story', ch: 'c6', date: '2026-06-20', title: '加密聊天室的对话', text: '雨巷的客人：雾山会成员提到「林晚查到了账目」「按老规矩办」，还有一句「她在看」。' },
+  m5: { type: 'mislead', ch: 'c3', date: '2008-03-19', title: '「家属已接受结论」报道', text: '旧报刊登《家属已接受调查结论》，暗示苏承案没有冤情、家属不再追究。' },
+  m6: { type: 'mislead', ch: 'c2', date: '2026-06-14', title: '「主动失联」的疑点', text: '通话详单显示 23:47 之后林晚仍主动拨出两分钟电话——看起来她是主动离开的，而非被动失踪。' },
+  m7: { type: 'mislead', ch: 'c2', date: '2026-06-15', title: '深夜的货车', text: '雾山吧有人目击 6 月 14 日深夜雾山实业货车出入老城区，暗示公司当晚与之有关。' },
+  m8: { type: 'mislead', ch: 'c6', date: '2026-06-20', title: '「观雨者是我们的人」', text: '加密聊天室里有人声称「观雨者是我们的人，盯住她就行」——像是暗示观雨者属于雾山会。' },
+  s6: { type: 'super', ch: 'c3', date: '2008-03-12', title: '气象记录被备份', text: '雾山气象站 2008-03-12 记录：多云、无雨。页脚却写着「历史数据由雾山实业提供备份」。' },
+  s7: { type: 'super', ch: 'c2', date: '2026-06-14', title: '连拍里的人影', text: '林晚相机 23:44 的连拍里，走廊尽头有一道人影。它比路灯更暗，也更近。' },
+  s8: { type: 'super', ch: 'c6', date: '1996-09-01', title: '老合影', text: '1996 年雾山中学教师合影：苏承身边站着校工林守正。2008 年，苏小雨由林守正一家收养。' },
+  s9: { type: 'super', ch: 'c6', date: '2007-06-13', title: '旧博客里的「小雨」', text: '观雨者的旧博客第一篇写道：校门口的梧桐树，小雨总在那等爸爸。他认识小时候的苏小雨。' },
+  s10: { type: 'super', ch: 'c6', date: '2008-03-13', title: '停更于案发次日', text: '观雨者的旧博客最后一篇写于 2008-03-13：「他走了。雨停之前，不要抬头。我答应过他。」此后停更。' },
+  s11: { type: 'super', ch: 'c6', date: '未知', title: '每年 3 月 12 日的访客', text: '雨巷旧版镜像的访问日志里，同一个 IP 从 2008 年起，每年 3 月 12 日访问一次。' }
+});
+// 原有线索的章节归属（v2 任务日志分组用）
+const CH_MAP = { k1:'c2', k2:'c3', k3:'c4', k4:'c5', k5:'c5', m1:'c1', m2:'c4', m3:'c3', m4:'c5', s1:'c1', s2:'c1', s3:'c3', s4:'c6', s5:'c5' };
+for (const id of Object.keys(CH_MAP)) CLUES[id].ch = CH_MAP[id];
+
+Object.assign(PEOPLE, {
+  aqing: { name: '阿青', unlock: ['t2', 'm1'], desc: '林晚的大学好友，知道她云盘密码。6 月 14 日晚与林晚通过两次电话。' },
+  zhoufang: { name: '周方', unlock: ['t1'], desc: '本地晚报记者，2008 年报道苏承案；一篇原稿《教师之死疑点重重》被撤下，没有见报。' },
+  linshouzheng: { name: '林守正', unlock: ['s8'], desc: '雾山中学 1990 年代校工，1996 年合影时站在苏承身边。2008 年收养了苏小雨（林晚）。' }
+});
+
+/* ============ 搜索路由扩充 ============ */
+Object.assign(SEARCH, {
+  '气象': [{ t: '雾山气象站', u: 'wx.wushan.cn/', d: '历史天气查询。' }],
+  '撤稿': [{ t: '旧报扫描库 · 教师之死疑点重重（未刊发）', u: 'newspaper.wushan.cn/2008-03-16-draft', d: '记者周方原稿，未刊发。' }],
+  '周方': [{ t: '旧报扫描库 · 记者周方', u: 'newspaper.wushan.cn/', d: '本地晚报记者，2008 年报道苏承案。' }],
+  '详单': [{ t: '通话详单查询', u: 'records.wushan.cn/', d: '雾山移动客户详单查询。' }],
+  '账目': [{ t: '雾山中学校舍改造工程 · 账目', u: 'tender.wushan.cn/account', d: '2002-2009 工程账目。' }],
+  '贴吧': [{ t: '雾山吧', u: 'tieba.wushan.cn/', d: '本地贴吧，近期讨论很多。' }],
+  '胶卷': [{ t: '拾光 · 胶卷（相机存储卡）', u: 'film.linwan.cn/', d: '林晚相机的存储卡扫描。' }],
+  '合影': [{ t: '校友录 · 1996 年教师合影', u: 'alumni.wushan.cn/photo-1996', d: '雾山中学 1996 年合影。' }],
+  '雨巷见': [{ t: '通话详单 · 短信记录', u: 'records.wushan.cn/', d: '23:46 收到的短信内容。' }],
+  '小雨': [{ t: '观雨者的旧博客', u: 'guanyuzhe2007.net/', d: '2007 年建站的个人博客。' }]
+});
+
+/* ============ 新增 10 站点 ============ */
+Object.assign(SITES, {
+  'wx.wushan.cn': {
+    name: '雾山气象站',
+    pages: {
+      '/': {
+        title: '雾山气象站',
+        html: () => `
+          <div class="page site-wx">
+            <div class="wx-box"><b>雾山气象站 · 历史天气查询</b><br><br>
+              <a data-nav="wx.wushan.cn/history/2008-03-12">2008-03-12</a> · <a data-nav="wx.wushan.cn/history/2026-06-14">2026-06-14</a>
+            </div>
+          </div>`
+      },
+      '/history/2008-03-12': {
+        title: '2008-03-12 · 多云',
+        mount: (el) => discover('s6'),
+        html: () => `
+          <div class="page site-wx">
+            <div class="wx-box">
+              <b>雾山 · 2008-03-12</b><br>
+              天气：多云　气温：8~16℃　降水：无<br>
+              风向：北风 2-3 级<br><br>
+              <span class="warn">（页脚）历史数据由雾山实业提供备份。</span>
+            </div>
+          </div>`
+      },
+      '/history/2026-06-14': {
+        title: '2026-06-14 · 暴雨',
+        html: () => `
+          <div class="page site-wx">
+            <div class="wx-box">
+              <b>雾山 · 2026-06-14</b><br>
+              天气：暴雨　气温：19~23℃　降水：78mm<br>
+              23:00-24:00 持续强降水，老城区部分路段积水。<br><br>
+              <span class="warn">（页脚）历史数据由雾山实业提供备份。</span>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'newspaper.wushan.cn': {
+    name: '旧报扫描库',
+    pages: {
+      '/': {
+        title: '旧报扫描库 · 2008 年合订本',
+        html: () => `
+          <div class="page site-news article">
+            <div class="news-head">旧报扫描库 · newspaper.wushan.cn</div>
+            <h1>《本地晚报》2008 年 3 月合订本</h1>
+            <div class="meta">扫描件 · 记者：周方</div>
+            <div class="comments">
+              <div class="c"><a data-nav="newspaper.wushan.cn/2008-03-14">3-14　雾山中学一教师家中死亡</a></div>
+              <div class="c"><a data-nav="newspaper.wushan.cn/2008-03-16-draft">3-16　教师之死疑点重重（未刊发原稿）</a></div>
+              <div class="c"><a data-nav="newspaper.wushan.cn/2008-03-19">3-19　家属已接受调查结论</a></div>
+            </div>
+          </div>`
+      },
+      '/2008-03-14': {
+        title: '2008-03-14 见报稿',
+        html: () => `
+          <div class="page site-news article">
+            <div class="news-head">旧报扫描库 · 见报稿</div>
+            <h1>雾山中学一教师家中死亡</h1>
+            <div class="meta">2008-03-14 · 周方</div>
+            <p>与本地晚报当日见报内容一致。扫描件右下角有钢笔批注：<b>「编辑压了后半段。」</b></p>
+          </div>`
+      },
+      '/2008-03-16-draft': {
+        title: '教师之死疑点重重（未刊发）',
+        mount: (el) => discover('t1'),
+        html: () => `
+          <div class="page site-news article">
+            <div class="news-head">旧报扫描库 · 原稿（未刊发）</div>
+            <h1>教师之死疑点重重</h1>
+            <div class="meta">2008-03-16 · 周方 · 标注：编辑未通过</div>
+            <p>本报讯　据不愿透露姓名的警方消息人士称，死者苏承生前曾向同事表示自己「被人威胁」，事发前一日曾到学校财务室核对账目。</p>
+            <p>现场勘查记录显示，宿舍门锁完好，但临窗的桌上有半杯未喝完的茶——按同事的说法，苏承从不喝茶。</p>
+            <p>（原稿到此为止，未见报。）</p>
+          </div>`
+      },
+      '/2008-03-19': {
+        title: '家属已接受调查结论',
+        mount: (el) => discover('m5'),
+        html: () => `
+          <div class="page site-news article">
+            <div class="news-head">旧报扫描库 · 见报稿</div>
+            <h1>家属已接受调查结论</h1>
+            <div class="meta">2008-03-19 · 周方</div>
+            <p>本报讯　苏承之女已由其亲属接走，家属表示接受警方调查结论，不愿再就此事发表意见。</p>
+            <p>（扫描件背面有一行铅笔字：<b>「家属没说过这句话。」</b>）</p>
+          </div>`
+      }
+    }
+  },
+
+  'records.wushan.cn': {
+    name: '通话详单',
+    pages: {
+      '/': {
+        title: '通话详单 · 林晚',
+        mount: (el) => {
+          discover('t2');
+          discover('m6');
+        },
+        html: () => `
+          <div class="page site-records">
+            <div class="rec-head" style="background:#123;color:#fff;padding:9px 16px">雾山移动 · 客户详单（林晚 139****4821）</div>
+            <div style="padding:14px 0">
+              <div class="call-row"><span class="t">06-14 23:40 主叫 阿青 138****2047</span><span>28 秒</span></div>
+              <div class="call-row"><span class="t">06-14 23:46 短信 来自 170****0000</span><span>「雨巷见」</span></div>
+              <div class="call-row"><span class="t">06-14 23:48 主叫 阿青 138****2047</span><span>2 分 01 秒</span></div>
+              <div class="call-row"><span class="t">06-15 00:12 未接来电 林守正</span><span>—</span></div>
+              <div class="muted-note" style="margin-top:12px">之后无任何通话与短信记录。</div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'tender.wushan.cn': {
+    name: '招标与账目',
+    pages: {
+      '/': {
+        title: '校舍改造工程',
+        html: () => `
+          <div class="page site-industry">
+            <div class="ind-nav"><span>雾山县公共资源交易</span></div>
+            <div class="ind-hero"><div class="t">雾山中学校舍改造工程</div><div class="s">2002—2009 · 中标单位：雾山实业有限公司</div></div>
+            <div class="paper" style="line-height:2"><a data-nav="tender.wushan.cn/account">项目账目明细（点击查看）</a></div>
+          </div>`
+      },
+      '/account': {
+        title: '项目账目',
+        mount: (el) => discover('t3'),
+        html: () => `
+          <div class="page site-industry">
+            <div class="ind-nav"><span>雾山县公共资源交易 · 账目</span></div>
+            <div class="paper" style="line-height:2;margin-top:16px">
+              <b>雾山中学校舍改造工程 账目</b><br><br>
+              预算：480 万元<br>
+              决算：320 万元<br>
+              <b>缺口：160 万元（标注：待核）</b><br><br>
+              <div class="muted-note">本页与案卷 WS-2008-0312 内会议纪要相互印证。</div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'tieba.wushan.cn': {
+    name: '雾山吧',
+    pages: {
+      '/': {
+        title: '雾山吧',
+        mount: (el) => {
+          discover('t4');
+          discover('m7');
+        },
+        html: () => `
+          <div class="page site-tieba">
+            <div class="tb-head">雾山吧 · tieba.wushan.cn</div>
+            <div style="padding:14px 0">
+              <div class="tieba-item"><b>【求助】6月14日晚有人拍我家窗户</b> · 雾山老张<br>雨下得最大的时候，大概 23 点，有人敲窗户。我开门看，没人。第二天听说林晚失踪了，心里发毛。</div>
+              <div class="tieba-item"><b>【疑问】雾山实业的货车半夜进老城区？</b> · 路过<br>14 号深夜看见两辆雾山实业的大货车往老城区方向开。大半夜的，拉什么货？</div>
+              <div class="tieba-item"><b>林晚到底怎么回事</b> · 雾山通<br>有人说欠钱跑了，有人说查什么旧案。楼下别吵，等官方通报。</div>
+              <div class="tieba-item"><b>老城区那栋楼还有人住吗</b> · 匿名<br>晚上路过，二楼好像亮着灯。可能是我想多了。</div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'film.linwan.cn': {
+    name: '拾光 · 胶卷',
+    pages: {
+      '/': {
+        title: '拾光 · 胶卷',
+        html: () => `
+          <div class="page site-film">
+            <div class="cloud-head">拾光 · 相机存储卡（6 月）</div>
+            <div class="film-grid">
+              <div class="film-ph">🌧<div class="dt">06-14 23:44 连拍 A</div></div>
+              <div class="film-ph" data-action="zoom-film" data-film="corridor">🚪<div class="dt">06-14 23:44 连拍 B</div></div>
+              <div class="film-ph" data-action="zoom-film" data-film="rain">🌃<div class="dt">06-14 23:47 雨夜</div></div>
+              <div class="film-ph">🏫<div class="dt">06-10 旧学校</div></div>
+              <div class="film-ph">🏠<div class="dt">05-20 老城区</div></div>
+              <div class="film-ph">📷<div class="dt">05-01 空胶卷</div></div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'alumni.wushan.cn': {
+    name: '校友录',
+    pages: {
+      '/': {
+        title: '校友录 · 雾山中学',
+        html: () => `
+          <div class="page site-alumni">
+            <div class="alumni-card"><b>校友录 · 老照片</b><br><a data-nav="alumni.wushan.cn/photo-1996">1996 年教师合影</a></div>
+          </div>`
+      },
+      '/photo-1996': {
+        title: '1996 年教师合影',
+        mount: (el) => discover('s8'),
+        html: () => `
+          <div class="page site-alumni">
+            <div class="alumni-card">
+              <b>雾山中学 · 1996 年教师合影（扫描件）</b><br><br>
+              名单（局部）：后排左三 苏承；后排左四 林守正（校工）。<br><br>
+              备注：2008 年，苏小雨由林守正一家收养。<br>
+              <div class="muted-note" style="margin-top:10px">照片右下角有一行小字：<b>「雨。」</b></div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'den.wuyu.net': {
+    name: '雨巷的客人',
+    pages: {
+      '/': {
+        title: '雨巷的客人',
+        mount: (el) => {
+          discover('m8');
+          discover('t5');
+          if (!has('denSeen')) {
+            flag('denSeen');
+            scheduleDenReply(el);
+          }
+        },
+        html: () => `
+          <div class="page site-den">
+            <div class="cloud-head">雨巷的客人 · 加密日志（节选）</div>
+            <div style="padding:16px 0">
+              <div class="den-msg"><span class="u">赵</span>：林晚查到了账目。</div>
+              <div class="den-msg"><span class="u">孙</span>：按老规矩办。</div>
+              <div class="den-msg"><span class="u">钱</span>：观雨者是我们的人，盯住她就行。</div>
+              <div class="den-msg"><span class="me">客</span>：她在看。</div>
+              <div class="den-msg"><span class="u">赵</span>：2007 年的雨巷，去那看看她写了什么：guanyuzhe2007.net</div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'guanyuzhe2007.net': {
+    name: '观雨者的旧博客',
+    pages: {
+      '/': {
+        title: '雨巷 · 2007',
+        mount: (el) => {
+          discover('s9');
+          discover('s10');
+        },
+        html: () => `
+          <div class="page site-gblog">
+            <div class="dark-page" style="text-align:left">
+              <div class="red" style="text-align:center">雨巷 · 2007</div>
+              <div class="dim" style="margin-top:30px">2007-06-13　《雾山的雨》</div>
+              <div class="red" style="margin-top:8px">雾山的雨一下就是半个月。校门口的梧桐树，小雨总在那等爸爸。</div>
+              <div class="dim" style="margin-top:30px">2007-08-02　《有人来了》</div>
+              <div class="red" style="margin-top:8px">有人来了。我不确定他看见我没有。</div>
+              <div class="dim" style="margin-top:30px">2008-03-13　《他走了》</div>
+              <div class="red" style="margin-top:8px">他走了。雨停之前，不要抬头。我答应过他。</div>
+              <div class="dim" style="margin-top:40px"><a data-nav="mirror.yuxiang2026.net/">旧版雨巷镜像 →</a></div>
+            </div>
+          </div>`
+      }
+    }
+  },
+
+  'mirror.yuxiang2026.net': {
+    name: '雨巷 · 旧版镜像',
+    pages: {
+      '/': {
+        title: '雨巷 · 旧版镜像',
+        mount: (el) => discover('s11'),
+        html: () => `
+          <div class="page site-mirror">
+            <div class="dark-page">
+              <div class="red">雨。</div>
+              <div class="dim" style="margin-top:40px">2007 年版 · 访客日志</div>
+              <div class="red" style="margin-top:20px;font-size:13px">
+                2008-03-12 / 2012-03-12 / 2016-03-12 / 2020-03-12 / 2024-03-12<br>
+                同一 IP：172.16.0.7
+              </div>
+              <div class="dim" style="margin-top:40px">如果雨停了，就不要来了。</div>
+            </div>
+          </div>`
+      }
+    }
+  }
+});
+
+Object.assign(SOURCES, {
+  'guanyuzhe2007.net/': `<!DOCTYPE html>
+<html>
+  <head><title>雨巷 · 2007</title></head>
+  <body>
+    <h1>雨巷</h1>
+    <!-- 你看到了什么？ -->
+  </body>
+</html>`,
+  'mirror.yuxiang2026.net/': `<!DOCTYPE html>
+<html>
+  <head><title>雨巷 · 旧版镜像</title></head>
+  <body>
+    <p>2007</p>
+    <!-- 他一直在看。 -->
+  </body>
+</html>`
+});
+
+
+/* ============ v2 章节体系 ============ */
+const CHAPTERS = [
+  { id: 'c0', title: '序幕 · 一封邮件', line: '主线', unlock: () => has('startedDesktop'), text: '2026 年 6 月 20 日，你收到一封匿名邮件。发件人叫林晚——一个已经失踪六天的摄影师。她说：请帮我。' },
+  { id: 'c1', title: '第一章 · 拾光者', line: '主线', unlock: () => has('emailReadHelp'), text: '你开始整理林晚留下的痕迹：主页、博客、论坛。她是一个把「不被看见的东西」拍下来的人。' },
+  { id: 'c2', title: '第二章 · 失踪者还活着', line: '主线', unlock: () => isDiscovered('k1'), text: '她的最后一条动态停在 6 月 14 日。可论坛记录显示，6 月 19 日凌晨，她的账号还在登录。' },
+  { id: 'c3', title: '第三章 · 旧案', line: '主线', unlock: () => isDiscovered('k2'), text: '2008 年 3 月 12 日，雾山中学教师苏承死在生日当天。档案里有两份互相矛盾的笔录。' },
+  { id: 'c4', title: '第四章 · 旧案之下', line: '主线', unlock: () => isDiscovered('k3'), text: '旧网站的隐藏页里，有一份会议纪要。赵德厚、钱卫国、孙立军——他们在 3 月 12 日晚上，安排了苏承的死。' },
+  { id: 'c5', title: '第五章 · 身份', line: '主线', unlock: () => isDiscovered('k4'), text: '林晚原名苏小雨。苏承是她的父亲。她没有失踪——她把自己藏了起来，等你把真相交出去。' },
+  { id: 'c6', title: '第六章 · 雨巷', line: '暗线', unlock: () => isDiscovered('s4'), text: '你走进了雨巷。他一直在看。而 2007 年，他就已经认识小雨了。' },
+  { id: 'c7', title: '终章 · 抉择', line: '主线', unlock: () => has('finalUnlocked'), text: '林晚把选择交给了你：公开，或者沉默。雨还没有停。' }
+];
+if (!save.chaptersSeen) save.chaptersSeen = [];
+
+function checkChapters() {
+  if (!has('startedDesktop')) return;
+  for (const c of CHAPTERS) {
+    if (save.chaptersSeen.includes(c.id)) continue;
+    if (c.unlock()) {
+      save.chaptersSeen.push(c.id);
+      persist();
+      showChapterCard(c);
+    }
+  }
+}
+function showChapterCard(c) {
+  const el = $('chapter-card');
+  if (!el) return;
+  el.innerHTML = `<div class="cc"><div class="cline">${esc(c.line)}</div><h2>${esc(c.title)}</h2><p>${esc(c.text)}</p><button data-chapter="ok">继 续</button></div>`;
+  el.classList.add('show');
+  const btn = el.querySelector('[data-chapter="ok"]');
+  if (btn) btn.onclick = () => el.classList.remove('show');
+  playDiscover();
+}
+
+/* ============ 反应式叙事 ============ */
+const REACTIONS = [
+  { id: 'r_archive', check: () => has('archiveOpen'), who: '观雨者', body: () => '你在查什么，' + nameOf() + '？', act: () => openApp('notes') },
+  { id: 'r_k2', check: () => isDiscovered('k2'), who: '拾光博客', body: () => '林晚的博客更新了一篇新文章：《2008 年 3 月 12 日》。', act: () => openApp('browser') },
+  { id: 'r_hidden', check: () => isDiscovered('k3'), who: '观雨者', body: () => '你找到了不该有的东西。', act: () => openApp('notes') },
+  { id: 'r_aqing', check: () => isDiscovered('k4'), who: '雾山邮箱', body: () => '收件箱里有一封新邮件：《给小雨》。', act: () => openApp('email') },
+  { id: 'r_dark', check: () => isDiscovered('s4'), who: '观雨者', body: () => '你来了，' + nameOf() + '。', act: () => openApp('browser') },
+  { id: 'r_final', check: () => has('finalUnlocked'), who: '观雨者', body: () => '别关灯，' + nameOf() + '。', act: () => openApp('notes') }
+];
+function checkReactions() {
+  if (!has('startedDesktop')) return;
+  for (const r of REACTIONS) {
+    if (r.check() && !has('react_' + r.id)) {
+      flag('react_' + r.id);
+      addNotification(r.who, r.body(), r.act);
+    }
+  }
+}
+function nameOf() { return save.flags.playerName || '匿名网友'; }
+
+const __disc = discover;
+function discover(id, silent) {
+  const r = __disc(id, silent);
+  if (r) { checkChapters(); checkReactions(); }
+  return r;
+}
+const __flag = flag;
+function flag(k, v) {
+  __flag(k, v === undefined ? true : v);
+  checkChapters();
+  checkReactions();
+}
+
+/* ============ 任务日志 v2 ============ */
+(function injectChaptersTab() {
+  const tabs = $('journal-tabs');
+  if (tabs && !tabs.querySelector('[data-jtab="chapters"]')) {
+    const b = document.createElement('button');
+    b.className = 'jtab';
+    b.setAttribute('data-jtab', 'chapters');
+    b.textContent = '章节';
+    tabs.appendChild(b);
+  }
+})();
+function renderJournal() {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.toggle('active', b.getAttribute('data-jtab') === journalTab));
+  const body = $('journal-body');
+  const typeName = { key: '<span class="clue-mark key">关键</span>', mislead: '<span class="clue-mark mislead">存疑</span>', super: '<span class="clue-mark super">异常</span>', story: '<span class="clue-mark story">剧情</span>' };
+  const typeLabel = { key: '关键线索', mislead: '可能为误导', super: '异常线索', story: '剧情线索' };
+  if (journalTab === 'chapters') {
+    body.innerHTML = CHAPTERS.map(c => {
+      const on = save.chaptersSeen.includes(c.id);
+      return `<div class="jclue"><div class="jt">${esc(c.title)} <span class="clue-mark ${on ? 'done' : 'story'}">${on ? '已解锁' : '未解锁'}</span></div><div class="jd">${esc(c.line)}</div><div>${esc(c.text)}</div></div>`;
+    }).join('');
+  } else if (journalTab === 'clues') {
+    const chOrder = CHAPTERS.map(c => c.id);
+    const byCh = {};
+    for (const id of Object.keys(CLUES)) {
+      if (!isDiscovered(id)) continue;
+      const ch = CLUES[id].ch || 'c0';
+      (byCh[ch] = byCh[ch] || []).push(id);
+    }
+    let html = '';
+    for (const ch of chOrder) {
+      if (!byCh[ch]) continue;
+      const cmeta = CHAPTERS.find(c => c.id === ch);
+      html += `<div style="margin:16px 0 8px;color:#b0833a;font-size:13px;letter-spacing:.08em">${esc(cmeta ? cmeta.title : ch)}</div>`;
+      for (const id of byCh[ch]) {
+        const c = CLUES[id];
+        const on = isMarked(id);
+        html += `<div class="jclue"><div class="jt">${esc(c.title)} ${typeName[c.type] || ''}</div><div class="jd">${esc(c.date)} · ${esc(typeLabel[c.type] || '')}</div><div>${esc(c.text)}</div><div style="margin-top:8px"><button class="mark-btn ${on ? 'on' : ''}" data-mark="${id}">${on ? '已标记为误导 ✓' : '标记为误导'}</button></div></div>`;
+      }
+    }
+    body.innerHTML = html || '<div class="muted-note" style="line-height:2">还没有发现线索。</div>';
+  } else if (journalTab === 'people') {
+    const list = Object.keys(PEOPLE).filter(k => PEOPLE[k].unlock.some(isDiscovered));
+    body.innerHTML = list.length ? list.map(k => {
+      const p = PEOPLE[k];
+      return `<div class="jperson"><div class="pn">${esc(p.name)}</div><div class="pd">${esc(p.desc)}</div></div>`;
+    }).join('') : '<div class="muted-note" style="line-height:2">还没有足够的信息拼出人物关系。</div>';
+  } else if (journalTab === 'timeline') {
+    const rows = save.discovered.map(id => CLUES[id]).filter(Boolean)
+      .sort((a, b) => (a.date === '未知' ? '9999' : a.date).localeCompare(b.date === '未知' ? '9999' : b.date));
+    body.innerHTML = rows.length ? rows.map(c => `<div class="jtime"><span class="dt">${esc(c.date)}</span><span>${esc(c.title)}</span></div>`).join('')
+      : '<div class="muted-note" style="line-height:2">时间线会随着线索的发现自动整理。</div>';
+  } else if (journalTab === 'final') {
+    const s = endingStats();
+    const rain = canRain();
+    if (!has('finalUnlocked')) {
+      body.innerHTML = `<div class="jfinal"><div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.super}/${Object.keys(CLUES).filter(id => CLUES[id].type === 'super').length} · 已标记误导 ${s.mRight}/4</div>
+        <div class="muted-note" style="line-height:2;margin-top:12px">先读完林晚写给你的那封信（邮箱收件箱），再来做最终抉择。</div></div>`;
+    } else {
+      body.innerHTML = `<div class="jfinal">
+        <div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.super}/${Object.keys(CLUES).filter(id => CLUES[id].type === 'super').length} · 已标记误导 ${s.mRight}/4</div>
+        <div class="muted-note" style="line-height:1.8;margin:10px 0">结局取决于你掌握的线索与最终的选择。</div>
+        <button data-end="publish">公开全部证据</button>
+        <button data-end="destroy">销毁证据，让一切沉默</button>
+        <button data-end="rain" ${rain ? '' : 'disabled'}>走进雨巷${rain ? '' : '（条件不足）'}</button>
+      </div>`;
+    }
+  }
+}
+
+/* ============ 氛围音频：雨声与心跳 ============ */
+let rainNodes = null, heartInterval = null;
+function setRain(on) {
+  if (!AC) return;
+  if (on && !rainNodes) {
+    const src = AC.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    const bp = AC.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 0.6;
+    const g = AC.createGain();
+    g.gain.value = 0.04;
+    src.connect(bp); bp.connect(g); g.connect(master);
+    src.start();
+    rainNodes = { src, g };
+  } else if (!on && rainNodes) {
+    try { rainNodes.src.stop(); } catch (e) {}
+    rainNodes = null;
+  }
+}
+function setHeartbeat(on) {
+  if (on && !heartInterval) {
+    heartInterval = setInterval(() => playHeartbeat(0.55), 1500);
+  } else if (!on && heartInterval) {
+    clearInterval(heartInterval);
+    heartInterval = null;
+  }
+}
+
+/* ============ 克制惊吓（相册连拍） ============ */
+function restrainedScare() {
+  if (has('filmScare')) return;
+  flag('filmScare');
+  const s = $('scare');
+  s.classList.remove('hidden');
+  s.classList.add('show');
+  playTone(180, 0.4, 0.2, 'sawtooth');
+  playTone(191, 0.4, 0.18, 'sawtooth', 0.03);
+  setTimeout(() => { s.classList.add('hidden'); s.classList.remove('show'); }, 460);
+}
+function zoomFilm(kind) {
+  if (kind === 'corridor') {
+    discover('s7');
+    restrainedScare();
+    showLightbox(`<div style="background:#0c0e13;padding:20px;border-radius:8px">
+      <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" style="width:min(700px,86vw)">
+        <rect width="640" height="400" fill="#0b0d12"/>
+        <rect x="60" y="20" width="520" height="360" fill="#14171e"/>
+        <rect x="120" y="40" width="80" height="90" fill="#1b2029"/>
+        <rect x="230" y="40" width="80" height="90" fill="#1b2029"/>
+        <rect x="340" y="40" width="80" height="90" fill="#1b2029"/>
+        <line x1="0" y1="380" x2="640" y2="380" stroke="#22262f" stroke-width="3"/>
+        <ellipse cx="560" cy="200" rx="9" ry="16" fill="#05060a"/>
+        <circle cx="557" cy="192" r="2" fill="#8b0f0f"/>
+        <circle cx="563" cy="192" r="2" fill="#8b0f0f"/>
+      </svg></div>
+      <div class="lb-cap">连拍 B · 2026-06-14 23:44
+走廊尽头……有一道人影。</div>`);
+  } else if (kind === 'rain') {
+    if (!has('photoZoom')) {
+      flag('photoZoom');
+      toast('这张照片的拍摄时间……是失踪之后。');
+    }
+    showLightbox(`<div style="background:#15181d;padding:18px;border-radius:8px">${nightPhotoSVG()}</div>
+      <div class="lb-cap">拍摄于 2026-06-18 23:02 · 雾山老城区
+右下角有一行几乎看不见的小字：yuxiang</div>`);
+  }
+}
+function runAction(el) {
+  const act = el.getAttribute('data-action');
+  if (act === 'zoom-film') { zoomFilm(el.getAttribute('data-film')); return; }
+  if (act === 'maildraft-login') { maildraftLogin(); return; }
+  if (act === 'search') { submitSearch(el); return; }
+  if (act === 'zoom-photo') { zoomPhoto(el.getAttribute('data-photo')); return; }
+  if (act === 'zoom-avatar') { zoomAvatar(); return; }
+  if (act === 'archive-login') { archiveLogin(); return; }
+  if (act === 'cloud-login') { cloudLogin(); return; }
+  if (act === 'play-ghost-audio') { playGhostAudio(); toast('雨声……脚步声……还有别的东西。'); return; }
+}
+
+/* ============ 搜索路由扩充（暗层结果） ============ */
+SEARCH['观雨者'].push({ t: '观雨者的旧博客', u: 'guanyuzhe2007.net/', d: '2007 年建站的个人博客。' });
+function renderSearch(qStr) {
+  const m = qStr.match(/q=([^&]*)/);
+  const term = m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+  const t = term.trim();
+  const head = `<div class="page site-search"><div class="search-logo">寻搜</div>
+    <form class="search-form" data-action="search"><input name="q" value="${esc(t)}" placeholder="搜索你想知道的" autocomplete="off"><button>搜索</button></form>`;
+  if (!t) return head + `<div class="no-result">请输入关键词。</div></div>`;
+  const lq = t.toLowerCase();
+  if (lq === '雾山会') {
+    return head + `<div class="no-result">找到 0 条结果。<br><br><span style="color:#999">有些东西不在搜索引擎里。</span></div></div>`;
+  }
+  if (lq === '雨巷' || lq === 'yuxiang' || lq === 'yuxiang2026') {
+    if (has('darkUnlocked')) {
+      const extra = `
+        <div class="result"><a data-nav="den.wuyu.net/" class="rt">雨巷的客人 · 加密日志</a><div class="ru">den.wuyu.net</div><div class="rd">雨巷暗层入口。</div></div>
+        <div class="result"><a data-nav="guanyuzhe2007.net/" class="rt">雨巷 · 2007</a><div class="ru">guanyuzhe2007.net</div><div class="rd">观雨者的旧博客。</div></div>
+        <div class="result"><a data-nav="mirror.yuxiang2026.net/" class="rt">雨巷 · 旧版镜像</a><div class="ru">mirror.yuxiang2026.net</div><div class="rd">2007 年版雨巷与访客日志。</div></div>`;
+      return head + `<div style="margin-top:14px"><div class="result"><a data-nav="yuxiang2026.net/" class="rt">雨巷</a><div class="ru">yuxiang2026.net</div><div class="rd">你确定要进去吗？</div></div>${extra}</div></div>`;
+    }
+    return head + `<div class="no-result">找到 0 条结果。<br><br><span style="color:#999">……你确定要进去吗？</span></div></div>`;
+  }
+  if (lq === '我是谁' || lq === 'help') {
+    return head + `<div class="no-result">找到 0 条结果。<br><br><span style="color:#999">你找到了不该找到的东西。</span></div></div>`;
+  }
+  const res = SEARCH[t] || SEARCH[lq];
+  if (res) {
+    const items = res.map(r => `<div class="result"><a data-nav="${esc(r.u)}" class="rt">${esc(r.t)}</a><div class="ru">${esc(r.u)}</div><div class="rd">${esc(r.d)}</div></div>`).join('');
+    return head + `<div style="margin-top:14px">${items}</div></div>`;
+  }
+  return head + `<div class="no-result">找到 0 条结果。换个关键词试试。</div></div>`;
+}
+
+/* ============ 反应式内容：博客与邮件 ============ */
+SITES['blog.linwan.cn'].pages['/post/20080312'] = {
+  title: '2008 年 3 月 12 日',
+  html: () => `
+    <div class="page site-blog">
+      <div class="blog-head"><div class="bt">拾 光</div></div>
+      <div class="paper" style="font-size:15px;line-height:2.1">
+        <h2 style="font-size:21px;margin-bottom:10px">2008 年 3 月 12 日</h2>
+        <div class="muted-note">2026-06-21 · 林晚</div>
+        <p style="margin-top:14px">我反复推算那一夜：21:50 他们进入宿舍楼，23:00 离开。</p>
+        <p>门卫说没有异常，值班老师说他们来「关心苏老师」。第二天，他死了。</p>
+        <p>如果那天晚上有人敲过他的门，他为什么还会开门？</p>
+        <p>因为敲门的人他认识。</p>
+      </div>
+    </div>`
+};
+SITES['blog.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-blog">
+    <div class="blog-head"><div class="bt">拾 光${has('react_r_dark') ? ' · 雨没有停' : ''}</div><div class="muted-note" style="margin-top:6px">blog.linwan.cn · 林晚</div></div>
+    <div class="blog-list">
+      ${has('react_r_k2') ? `<div class="bpost" style="border-left:3px solid #8b0f0f"><a data-nav="blog.linwan.cn/post/20080312"><div class="t">2008 年 3 月 12 日</div></a><div class="d">2026-06-21 · 新发布</div></div>` : ''}
+      <div class="bpost"><a data-nav="blog.linwan.cn/post/sucheng"><div class="t">苏承老师</div></a><div class="d">2026-06-01 · 阅读 1.2 万</div></div>
+      <div class="bpost"><div class="t">回到雾山</div><div class="d">2026-05-20 · 阅读 8.4 千</div><div class="muted-note">十八年了。雾山的路还是老样子，只是认识的人都不在了。</div></div>
+      <div class="bpost"><a data-nav="blog.linwan.cn/drafts"><div class="t">草稿箱 <span class="draft-tag">（3 篇未发布）</span></div></a></div>
+    </div>
+  </div>`;
+SITES['mail.wushan.cn'].pages['/mail/aqing'] = {
+  title: '给小雨',
+  html: () => `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">已打开</div></div>
+        <div class="mail-body">
+          发件人：aqing@wushanmail.cn<br>
+          收件人：你<br>
+          主题：给小雨<br>
+          时间：2026-06-21 08:12<br><br>
+          你好。我是阿青，林晚的朋友。<br>
+          她失踪前把一封定时邮件给了我，让我「等到有人开始查这件事」就转寄出来。<br>
+          林晚，或者该叫她小雨——她这辈子只求过我一件事：<br>
+          如果她不见了，请让真相自己走出去。<br>
+          老照片在她旧学校的校友录里。去看一眼吧。
+        </div>
+      </div>
+    </div>`
+};
+SITES['mail.wushan.cn'].pages['/inbox'].html = () => {
+  const thanks = has('draftsRead');
+  const aqing = has('react_r_aqing');
+  return `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side">
+          <div class="on">收件箱</div>
+          <div>已发送</div>
+          <div data-nav="mail.wushan.cn/drafts" style="cursor:pointer">草稿箱</div>
+          <div>垃圾邮件</div>
+        </div>
+        <div class="mail-list">
+          ${aqing ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/aqing">
+            <span class="mdate">06-21 08:12</span>
+            <b>● </b>${esc('aqing@wushanmail.cn')}
+            <div class="msub">给小雨</div>
+          </div>` : ''}
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/help">
+            <span class="mdate">06-20 02:13</span>
+            <b>${has('emailReadHelp') ? '' : '● '}</b>${esc('linwan@wushanmail.cn')}
+            <div class="msub">请帮我</div>
+          </div>
+          ${thanks ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/thanks">
+            <span class="mdate">06-20 02:31</span>
+            <b>${has('emailReadThanks') ? '' : '● '}</b>${esc('linwan@wushanmail.cn')}
+            <div class="msub">谢谢你</div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>`;
+};
+
+/* ============ 聊天室反应回复 ============ */
+function scheduleDenReply(root) {
+  setTimeout(() => {
+    const box = root && root.querySelector('.site-den');
+    if (!box || !root.isConnected) return;
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.textContent = '有人正在输入…';
+    box.appendChild(div);
+    setTimeout(() => {
+      if (div.isConnected) {
+        div.className = 'den-msg';
+        div.innerHTML = `<span class="me">客</span>：有人在看。`;
+        playTick();
+      }
+    }, 2600);
+  }, 4200);
+}
+
+
+/* ============ v2 桌面壳：应用与窗口 ============ */
+const APPS = {
+  browser: { name: '浏览器', icon: '🌐', home: 'xunsou.cn/' },
+  email: { name: '邮箱', icon: '✉️', home: 'mail.wushan.cn/inbox' },
+  chat: { name: '聊天', icon: '💬', home: 'chat.linwan.cn/' },
+  cloud: { name: '云盘', icon: '☁️', home: 'cloud.linwan.cn/login' },
+  notes: { name: '笔记', icon: '📓', home: null },
+  settings: { name: '设置', icon: '⚙️', home: null }
+};
+let appNav = { email: 'mail.wushan.cn/inbox', chat: 'chat.linwan.cn/', cloud: 'cloud.linwan.cn/login', browserLast: null };
+let winState = {};
+let winZ = 20;
+let lastClickApp = 'browser';
+let desktopBuilt = false;
+
+const __navigate = navigate;
+function navigate(raw) {
+  const app = lastClickApp || 'browser';
+  if (app !== 'browser') {
+    if (!appNav[app]) return;
+    appNav[app] = urlKey(raw);
+    renderAppView(app);
+    playTick();
+    return;
+  }
+  __navigate(raw);
+}
+
+function renderUrlInto(el, url, isBrowser) {
+  if (!el) return;
+  const { host, path } = normalize(url);
+  const cleanPath = path.split('?')[0] || '/';
+  const q = path.includes('?') ? path.slice(path.indexOf('?') + 1) : '';
+  const site = SITES[host];
+  const page = site && site.pages[cleanPath] ? site.pages[cleanPath] : null;
+  if (isBrowser && activeTab) {
+    activeTab.title = page ? page.title : (site ? '页面不存在' : '无法访问');
+    $('addr').value = 'https://' + url;
+  }
+  let denied = null;
+  if (host === 'mail.wushan.cn' && cleanPath === '/drafts' && !has('mailDraftsOpen')) {
+    el.innerHTML = `<div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">草稿箱</div></div>
+        <div class="mail-body" style="text-align:center">
+          <h3 style="margin:18px 0 6px">草稿箱已加密</h3>
+          <div class="muted-note">林晚设置了访问密码。</div>
+          <input id="maildraft-pwd" type="password" placeholder="密码" autocomplete="off" style="padding:10px;width:230px;font-size:15px;margin:12px 0 0">
+          <div class="login-err" id="maildraft-err"></div>
+          <button class="btn red" data-action="maildraft-login">解 锁</button>
+          <div class="hint-line" style="text-align:left;margin-top:14px">提示：她原来的名字。</div>
+        </div>
+      </div>
+    </div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (host === '2008.wushan.cn' && cleanPath === '/confidential/20080312' && !isDiscovered('k2')) denied = '该页面需要案卷权限。先找到第二份笔录。';
+  if (host === 'cloud.linwan.cn' && (cleanPath === '/files' || cleanPath.startsWith('/file/')) && !has('cloudOpen')) denied = '需要访问密码。';
+  if (host === 'police.wushan.cn' && cleanPath.startsWith('/case/') && !has('archiveOpen')) denied = '需要档案查询权限。';
+  if (host === 'mail.wushan.cn' && cleanPath === '/mail/thanks' && !has('draftsRead')) denied = '这封邮件还不存在。';
+  if (host === 'den.wuyu.net' && !has('darkUnlocked')) denied = '加密日志需要暗网入口。先找到雨巷。';
+  if (host === 'mirror.yuxiang2026.net' && !has('darkUnlocked')) denied = '旧版镜像需要暗网入口。';
+  if (denied) {
+    el.innerHTML = `<div class="site-404"><div style="font-size:44px">403</div><div>${esc(denied)}</div><div class="muted-note" style="margin-top:16px">你正在接近一个不存在的页面。</div></div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (page) {
+    el.innerHTML = page.html ? page.html({ q }) : '';
+    if (page.mount) page.mount(el);
+    const onl = el.querySelector('[data-rand-online]');
+    if (onl) onl.textContent = '在线：' + (14 + Math.floor(Math.random() * 18)) + ' 人';
+  } else {
+    el.innerHTML = render404(host, cleanPath);
+  }
+  finishRender(el, host);
+}
+function finishRender(el, host) {
+  const dark = host === 'yuxiang2026.net' || host === 'mirror.yuxiang2026.net' || host === 'den.wuyu.net' || host === 'guanyuzhe2007.net';
+  enableGlitch(dark);
+  setRain(has('darkUnlocked'));
+  setHeartbeat(host === 'yuxiang2026.net' || host === 'mirror.yuxiang2026.net');
+  if (el.scrollTo) el.scrollTo(0, 0);
+  updateTaskbar();
+  updateJournalBadge();
+}
+function renderPage() {
+  if (activeTab) renderUrlInto($('viewport'), activeTab.url, true);
+}
+function renderAppView(app) {
+  const el = $('view-' + app);
+  if (!el) return;
+  renderUrlInto(el, appNav[app], false);
+  const { host } = normalize(appNav[app]);
+  updateWinTitle(app, HOSTS[host] || APPS[app].name);
+}
+
+/* ============ 桌面 DOM ============ */
+function buildDesktop() {
+  if (desktopBuilt) return;
+  desktopBuilt = true;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div id="boot"><div class="logo">拾光 OS</div><div class="bar"><i></i></div></div>
+    <div id="name-screen"><div class="card"><h3>你是谁</h3><p>林晚不知道你会来。她想把真相交给一个「看得懂的人」。<br>给她留一个代号。</p><input id="name-input" maxlength="12" placeholder="匿名网友"><button id="name-ok">进 入</button></div></div>
+    <div id="chapter-card"></div>
+    <div id="notify-stack"></div>
+    <div id="desktop">
+      <div id="wallpaper"></div>
+      <div id="icons"></div>
+      <div id="win-layer"></div>
+      <div id="taskbar">
+        <button id="start-tb">拾光</button>
+        <div id="tb-apps"></div>
+        <div id="tb-tray"><span id="tb-eye" class="hidden">👁</span><button id="tb-mute">音</button><span id="tb-clock">--:--</span></div>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+
+  const icons = [['browser', '浏览器', '🌐'], ['email', '邮箱', '✉️'], ['chat', '聊天', '💬'], ['cloud', '云盘', '☁️'], ['notes', '笔记', '📓'], ['settings', '设置', '⚙️'], ['trash', '回收站', '🗑️']];
+  const icWrap = $('icons');
+  for (const [app, label, icon] of icons) {
+    const d = document.createElement('div');
+    d.className = 'dicon';
+    d.innerHTML = `<div class="ic">${icon}</div><div class="lb">${label}</div>`;
+    d.addEventListener('click', () => {
+      document.querySelectorAll('.dicon').forEach(x => x.classList.remove('sel'));
+      d.classList.add('sel');
+    });
+    d.addEventListener('dblclick', () => {
+      if (app === 'trash') addNotification('回收站', '空的。也许。', null);
+      else openApp(app);
+    });
+    icWrap.appendChild(d);
+  }
+
+  $('name-ok').onclick = confirmName;
+  $('start-tb').onclick = () => addNotification('拾光 OS', '雾山数据中心 · 一切正常。', null);
+  $('tb-mute').onclick = toggleMute;
+  $('journal-close').onclick = () => closeApp('notes');
+  $('win-layer').addEventListener('click', e => {
+    const btn = e.target.closest('[data-win]');
+    if (!btn) return;
+    const win = btn.closest('.win');
+    const app = win && win.getAttribute('data-app');
+    if (!app) return;
+    const act = btn.getAttribute('data-win');
+    if (act === 'close') closeApp(app);
+    else if (act === 'min') minimizeApp(app);
+    else if (act === 'max') toggleMax(app);
+  });
+  document.addEventListener('pointerdown', e => {
+    const win = e.target.closest('.win');
+    if (win) focusApp(win.getAttribute('data-app'));
+  }, true);
+  document.addEventListener('click', e => {
+    const w = e.target.closest('.app-win');
+    lastClickApp = w ? w.getAttribute('data-app') : 'browser';
+  });
+  document.addEventListener('keydown', e => {
+    if (e.altKey && !e.ctrlKey && /^[1-6]$/.test(e.key)) {
+      e.preventDefault();
+      openApp(['browser', 'email', 'chat', 'cloud', 'notes', 'settings'][Number(e.key) - 1]);
+    }
+    if (e.key === 'Enter' && e.target && e.target.id === 'name-input') confirmName();
+  });
+  setInterval(() => {
+    const c = $('tb-clock');
+    if (!c) return;
+    if (has('darkUnlocked')) {
+      c.textContent = '23:47';
+      const w = $('wallpaper');
+      if (w && Math.random() < 0.02) {
+        w.classList.add('flash');
+        setTimeout(() => w.classList.remove('flash'), 220);
+      }
+      if (w) w.classList.add('heavy');
+    } else {
+      const d = new Date();
+      c.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+  }, 1000);
+}
+
+/* ============ 窗口管理 ============ */
+function ensureWindow(app, title) {
+  if (winState[app] && winState[app].el) return winState[app];
+  const el = document.createElement('div');
+  el.className = 'win app-win';
+  el.setAttribute('data-app', app);
+  el.id = 'win-' + app;
+  const n = Object.keys(winState).length;
+  el.style.left = (70 + n * 34) + 'px';
+  el.style.top = (36 + n * 28) + 'px';
+  el.style.width = (app === 'browser' ? 980 : 860) + 'px';
+  el.style.height = (app === 'browser' ? 660 : 580) + 'px';
+  el.innerHTML = `<div class="win-bar"><span class="win-ico">${APPS[app].icon}</span><span class="win-title">${esc(title)}</span><div class="win-ctrl"><button data-win="min" title="最小化">─</button><button data-win="max" title="最大化">□</button><button data-win="close" class="wclose" title="关闭">×</button></div></div><div class="win-body"></div>`;
+  $('win-layer').appendChild(el);
+  const body = el.querySelector('.win-body');
+  if (app === 'browser') {
+    const br = $('browser');
+    if (br) body.appendChild(br);
+  }
+  if (app === 'email' || app === 'chat' || app === 'cloud') {
+    const v = document.createElement('div');
+    v.className = 'app-view';
+    v.id = 'view-' + app;
+    body.appendChild(v);
+  }
+  winState[app] = { app, el, open: true, minimized: false, max: false, ever: true };
+  makeDraggable(el.querySelector('.win-bar'), el, app);
+  return winState[app];
+}
+function makeDraggable(bar, win, app) {
+  let drag = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  bar.addEventListener('pointerdown', e => {
+    if (e.target.closest('.win-ctrl')) return;
+    if (winState[app].max) return;
+    drag = true;
+    sx = e.clientX; sy = e.clientY;
+    ox = win.offsetLeft; oy = win.offsetTop;
+    try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag) return;
+    win.style.left = (ox + e.clientX - sx) + 'px';
+    win.style.top = (oy + e.clientY - sy) + 'px';
+  });
+  bar.addEventListener('pointerup', () => { drag = false; });
+  bar.addEventListener('dblclick', () => toggleMax(app));
+}
+function focusApp(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  winZ++;
+  ws.el.style.zIndex = winZ;
+  document.querySelectorAll('.win').forEach(w => w.classList.remove('focus'));
+  ws.el.classList.add('focus');
+  updateTaskbar();
+}
+function closeApp(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  ws.open = false;
+  ws.el.style.display = 'none';
+  updateTaskbar();
+}
+function minimizeApp(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  ws.minimized = true;
+  ws.el.classList.add('min');
+  updateTaskbar();
+}
+function restoreApp(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  ws.minimized = false;
+  ws.open = true;
+  ws.el.classList.remove('min');
+  ws.el.style.display = '';
+  focusApp(app);
+}
+function toggleMax(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  if (ws.max) {
+    ws.el.classList.remove('max');
+    ws.el.style.left = ws._x + 'px';
+    ws.el.style.top = ws._y + 'px';
+    ws.el.style.width = ws._w + 'px';
+    ws.el.style.height = ws._h + 'px';
+    ws.max = false;
+  } else {
+    ws._x = ws.el.offsetLeft; ws._y = ws.el.offsetTop;
+    ws._w = ws.el.offsetWidth; ws._h = ws.el.offsetHeight;
+    ws.el.classList.add('max');
+    ws.el.style.left = '0px';
+    ws.el.style.top = '0px';
+    ws.el.style.width = '100%';
+    ws.el.style.height = '100%';
+    ws.max = true;
+  }
+  focusApp(app);
+}
+function updateWinTitle(app, title) {
+  const ws = winState[app];
+  if (ws && ws.el) {
+    const t = ws.el.querySelector('.win-title');
+    if (t) t.textContent = title;
+  }
+}
+function openApp(app) {
+  if (app === 'browser') {
+    if (!winState.browser) ensureWindow('browser', '浏览器');
+    const ws = winState.browser;
+    ws.open = true;
+    ws.el.style.display = '';
+    if (!activeTab) {
+      makeTab(appNav.browserLast || APPS.browser.home);
+    }
+    renderTabs();
+    renderPage();
+    restoreApp('browser');
+    updateTaskbar();
+    return;
+  }
+  if (app === 'email' || app === 'chat' || app === 'cloud') {
+    if (!winState[app]) ensureWindow(app, APPS[app].name);
+    const ws = winState[app];
+    ws.open = true;
+    ws.el.style.display = '';
+    renderAppView(app);
+    restoreApp(app);
+    updateTaskbar();
+    return;
+  }
+  if (app === 'notes') {
+    if (!winState.notes) {
+      ensureWindow('notes', '笔记');
+      const body = winState.notes.el.querySelector('.win-body');
+      const j = $('journal');
+      if (j && j.parentNode !== body) {
+        j.classList.remove('hidden');
+        body.appendChild(j);
+      }
+    }
+    const ws = winState.notes;
+    ws.open = true;
+    ws.el.style.display = '';
+    renderJournal();
+    restoreApp('notes');
+    updateTaskbar();
+    return;
+  }
+  if (app === 'settings') {
+    if (!winState.settings) {
+      ensureWindow('settings', '设置');
+      const body = winState.settings.el.querySelector('.win-body');
+      body.innerHTML = `<div class="app-view" style="background:#14161b;color:#cdd3dd;padding:26px">
+        <h3 style="margin-bottom:14px;letter-spacing:.2em">设 置</h3>
+        <p style="line-height:2.2">声音：<button class="btn red" id="set-mute">切换静音</button>（或按 M）</p>
+        <p style="line-height:2.2">切换应用：Alt + 1~6</p>
+        <p style="line-height:2.2">存档：自动保存在本机浏览器</p>
+        <div class="muted-note" style="margin-top:28px">设置 · 雾山数据中心 · 2008-2026</div>
+      </div>`;
+      body.querySelector('#set-mute').onclick = toggleMute;
+    }
+    const ws = winState.settings;
+    ws.open = true;
+    ws.el.style.display = '';
+    restoreApp('settings');
+    updateTaskbar();
+    return;
+  }
+}
+
+/* ============ 任务栏与通知 ============ */
+function emailUnread() {
+  let n = 0;
+  if (!has('emailReadHelp')) n++;
+  if (has('react_r_aqing') && !has('aqingRead')) n++;
+  if (has('draftsRead') && !has('emailReadThanks')) n++;
+  return n;
+}
+function updateTaskbar() {
+  const wrap = $('tb-apps');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (const app of Object.keys(winState)) {
+    const ws = winState[app];
+    if (!ws.ever) continue;
+    const b = document.createElement('button');
+    b.className = 'tb-app' + (ws.open && !ws.minimized ? ' active' : '');
+    let badge = '';
+    if (app === 'email' && emailUnread() > 0) badge = `<span class="bdg">${emailUnread()}</span>`;
+    if (app === 'notes' && save.discovered.length > 0) badge = `<span class="bdg">${save.discovered.length}</span>`;
+    b.innerHTML = APPS[app].icon + ' ' + APPS[app].name + badge;
+    b.onclick = () => {
+      if (ws.open && !ws.minimized) minimizeApp(app);
+      else if (ws.open && ws.minimized) restoreApp(app);
+      else openApp(app);
+    };
+    wrap.appendChild(b);
+  }
+  const eye = $('tb-eye');
+  if (eye) eye.classList.toggle('hidden', !isDiscovered('s1'));
+}
+function addNotification(who, body, act) {
+  const stack = $('notify-stack');
+  if (!stack) return;
+  const d = document.createElement('div');
+  d.className = 'notify';
+  d.innerHTML = `<div class="nt">${esc(who)}</div><div class="nb">${esc(body)}</div>`;
+  d.onclick = () => {
+    d.classList.add('out');
+    setTimeout(() => d.remove(), 300);
+    if (act) act();
+  };
+  stack.appendChild(d);
+  setTimeout(() => {
+    if (d.isConnected) {
+      d.classList.add('out');
+      setTimeout(() => d.remove(), 300);
+    }
+  }, 7000);
+  playTick();
+}
+
+/* ============ 开机与身份 ============ */
+function startNew() {
+  initAudio();
+  if (AC && AC.state === 'suspended') AC.resume();
+  save = defaultSave();
+  persist();
+  $('title-screen').classList.add('hidden');
+  buildDesktop();
+  $('name-screen').classList.add('show');
+}
+function confirmName() {
+  const inp = $('name-input');
+  const v = (inp && inp.value.trim()) || '匿名网友';
+  flag('playerName', v);
+  flag('nameSet');
+  $('name-screen').classList.remove('show');
+  const b = $('boot');
+  b.classList.add('show');
+  setTimeout(() => { b.classList.remove('show'); enterDesktop(); }, 2000);
+}
+function enterDesktop() {
+  gameStarted = true;
+  $('title-screen').classList.add('hidden');
+  $('intro').classList.add('hidden');
+  $('game').classList.add('hidden');
+  buildDesktop();
+  $('desktop').classList.add('show');
+  flag('startedDesktop');
+  checkChapters();
+  checkReactions();
+  openApp('email');
+  addNotification('雾山邮箱', 'linwan@wushanmail.cn：请帮我', () => openApp('email'));
+  updateTaskbar();
+}
+function beginGame() {
+  enterDesktop();
+}
+function continueGame() {
+  initAudio();
+  if (AC && AC.state === 'suspended') AC.resume();
+  gameStarted = true;
+  $('title-screen').classList.add('hidden');
+  if (save.ending) { showEnding(save.ending); return; }
+  enterDesktop();
+  if (save.lastUrl) {
+    openApp('browser');
+    lastClickApp = 'browser';
+    navigate(save.lastUrl);
+  } else {
+    openApp('email');
+  }
+}
+
+
+/* ===== 补丁：应用上下文路由（必须在旧点击监听之前注册） ===== */
+document.addEventListener('click', e => {
+  const w = e.target.closest('.app-win');
+  lastClickApp = w ? w.getAttribute('data-app') : 'browser';
+});
+
+Object.assign(HOSTS, {
+  'wx.wushan.cn': '雾山气象站',
+  'newspaper.wushan.cn': '旧报扫描库',
+  'records.wushan.cn': '通话详单',
+  'tender.wushan.cn': '招标与账目',
+  'tieba.wushan.cn': '雾山吧',
+  'film.linwan.cn': '拾光 · 胶卷',
+  'alumni.wushan.cn': '校友录',
+  'den.wuyu.net': '雨巷的客人',
+  'guanyuzhe2007.net': '雨巷 · 2007',
+  'mirror.yuxiang2026.net': '雨巷 · 旧版镜像'
+});
+
+/* 阿青邮件的已读标记 */
+SITES['mail.wushan.cn'].pages['/mail/aqing'].mount = (el) => flag('aqingRead');
+
+/* 窗口拖动守卫（DOM 桩环境下无标题栏时不报错） */
+function makeDraggable(bar, win, app) {
+  if (!bar) return;
+  let drag = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  bar.addEventListener('pointerdown', e => {
+    if (e.target.closest && e.target.closest('.win-ctrl')) return;
+    if (winState[app].max) return;
+    drag = true;
+    sx = e.clientX; sy = e.clientY;
+    ox = win.offsetLeft; oy = win.offsetTop;
+    try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag) return;
+    win.style.left = (ox + e.clientX - sx) + 'px';
+    win.style.top = (oy + e.clientY - sy) + 'px';
+  });
+  bar.addEventListener('pointerup', () => { drag = false; });
+  bar.addEventListener('dblclick', () => toggleMax(app));
+}
+
+/* ===== 补丁：修正 discover/flag/navigate 包装（函数声明覆盖，避免自递归） ===== */
+function flag(k, v) {
+  save.flags[k] = v === undefined ? true : v;
+  persist();
+  checkChapters();
+  checkReactions();
+}
+function discover(id, silent) {
+  if (isDiscovered(id)) return false;
+  const c = CLUES[id];
+  if (!c) return false;
+  save.discovered.push(id);
+  persist();
+  if (!silent) {
+    playDiscover();
+    toast('已记录新线索：「' + c.title + '」');
+  }
+  checkChapters();
+  checkReactions();
+  return true;
+}
+function navigate(raw) {
+  const app = lastClickApp || 'browser';
+  if (app !== 'browser') {
+    if (!appNav[app]) return;
+    appNav[app] = urlKey(raw);
+    renderAppView(app);
+    playTick();
+    return;
+  }
+  const key = urlKey(raw);
+  if (!activeTab) makeTab(key);
+  else {
+    const hist = activeTab.history.slice(0, activeTab.idx + 1);
+    hist.push(key);
+    activeTab.history = hist;
+    activeTab.idx = hist.length - 1;
+    activeTab.url = key;
+  }
+  save.lastUrl = key;
+  persist();
+  renderTabs();
+  renderPage();
+  playTick();
+}
+function openJournal(tab) {
+  journalTab = tab || journalTab;
+  openApp('notes');
+  renderJournal();
+}
 
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {

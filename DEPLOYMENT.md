@@ -74,3 +74,9 @@ npx --yes vercel@latest deploy . --token <TOKEN> --yes --prod --name mystery-gam
 ## 六、当前待办
 
 - [ ] 按用户反馈修复游戏 bug、调整玩法（改完 `index.html` 后按第二节流程更新两个平台）
+
+## v2 改版状态（2026-08-04）
+- 已完成：桌面仿真（窗口管理/任务栏/通知）、新增 10 站点（共 22）、29 条线索、章节卡+任务日志、反应式叙事、代号身份、分章节氛围、雨巷时钟冻结
+- 测试：
+ode .build-parts\test-harness6.js .build-parts\mystery_check.js（28 项全过）
+- 待办：Vercel 更新需用户临时提供 token（或先在 Vercel 后台连接 GitHub）；GitHub Pages 推 main 自动更新
