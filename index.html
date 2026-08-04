@@ -384,6 +384,12 @@
   .login-box h3 { color:#333; }
 </style>
 
+<style>
+  .app-bar { display:flex; align-items:center; gap:10px; padding:6px 10px; background:#2a2e36; color:#cdd3dd; font-size:13px; flex:0 0 auto; border-bottom:1px solid #33363e; }
+  .app-bar button { background:#343943; border:1px solid #434a56; color:#cdd3dd; border-radius:4px; padding:4px 14px; cursor:pointer; font-size:12.5px; }
+  .app-bar button:hover { background:#454c59; }
+</style>
+
 <body>
 
 <div id="title-screen">
@@ -3350,6 +3356,91 @@ function showChapterCard(c) {
   if (!has('startedDesktop')) return;
   addNotification('章节解锁', '「' + c.title + '」已记录到笔记', () => openApp('notes'));
 }
+
+/* ===== 补丁：应用窗口返回键与独立历史 ===== */
+const appHistory = { email: [], chat: [], cloud: [] };
+function appBack(app) {
+  if (!appNav[app]) return;
+  if (appHistory[app] && appHistory[app].length) {
+    appNav[app] = appHistory[app].pop();
+  } else {
+    appNav[app] = APPS[app].home;
+  }
+  renderAppView(app);
+  playTick();
+}
+function navigate(raw) {
+  const app = lastClickApp || 'browser';
+  if (app !== 'browser') {
+    if (!appNav[app]) return;
+    if (appHistory[app]) {
+      appHistory[app].push(appNav[app]);
+      if (appHistory[app].length > 40) appHistory[app].shift();
+    }
+    appNav[app] = urlKey(raw);
+    renderAppView(app);
+    playTick();
+    return;
+  }
+  const key = urlKey(raw);
+  if (!activeTab) makeTab(key);
+  else {
+    const hist = activeTab.history.slice(0, activeTab.idx + 1);
+    hist.push(key);
+    activeTab.history = hist;
+    activeTab.idx = hist.length - 1;
+    activeTab.url = key;
+  }
+  save.lastUrl = key;
+  persist();
+  renderTabs();
+  renderPage();
+  playTick();
+}
+function ensureWindow(app, title) {
+  if (winState[app] && winState[app].el) return winState[app];
+  const el = document.createElement('div');
+  el.className = 'win app-win';
+  el.setAttribute('data-app', app);
+  el.id = 'win-' + app;
+  const n = Object.keys(winState).length;
+  el.style.left = (70 + n * 34) + 'px';
+  el.style.top = (36 + n * 28) + 'px';
+  el.style.width = (app === 'browser' ? 980 : 860) + 'px';
+  el.style.height = (app === 'browser' ? 660 : 580) + 'px';
+  el.innerHTML = `<div class="win-bar"><span class="win-ico">${APPS[app].icon}</span><span class="win-title">${esc(title)}</span><div class="win-ctrl"><button data-win="min" title="最小化">─</button><button data-win="max" title="最大化">□</button><button data-win="close" class="wclose" title="关闭">×</button></div></div><div class="win-body"></div>`;
+  $('win-layer').appendChild(el);
+  const body = el.querySelector('.win-body');
+  if (app === 'browser') {
+    const br = $('browser');
+    if (br) body.appendChild(br);
+  }
+  if (app === 'email' || app === 'chat' || app === 'cloud') {
+    const bar = document.createElement('div');
+    bar.className = 'app-bar';
+    bar.innerHTML = `<button data-appbar="back">← 返回</button><span>${APPS[app].name}</span>`;
+    body.appendChild(bar);
+    const v = document.createElement('div');
+    v.className = 'app-view';
+    v.id = 'view-' + app;
+    body.appendChild(v);
+  }
+  winState[app] = { app, el, open: true, minimized: false, max: false, ever: true };
+  makeDraggable(el.querySelector('.win-bar'), el, app);
+  if (!el.getAttribute('data-shifted')) {
+    const cur = parseInt(el.style.left, 10) || 0;
+    if (cur < 170) el.style.left = (cur + 130) + 'px';
+    el.setAttribute('data-shifted', '1');
+  }
+  return winState[app];
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-appbar]');
+  if (b) {
+    const win = b.closest('.app-win');
+    if (win) appBack(win.getAttribute('data-app'));
+  }
+});
 
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
