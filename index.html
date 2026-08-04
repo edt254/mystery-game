@@ -3465,6 +3465,17 @@ function runAction(el) {
   if (act === 'play-ghost-audio') { playGhostAudio(); toast('雨声……脚步声……还有别的东西。'); return; }
 }
 
+/* ===== 补丁：搜索输入框按回车即搜索（显式处理，兼容各类内嵌浏览器） ===== */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const t = e.target;
+  if (!t || !t.tagName || t.tagName !== 'INPUT') return;
+  const form = t.closest('form[data-action="search"]');
+  if (!form) return;
+  e.preventDefault();
+  submitSearch(form);
+});
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
