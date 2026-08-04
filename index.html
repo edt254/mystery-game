@@ -373,6 +373,17 @@
   .win { pointer-events:auto; }
 </style>
 
+<style>
+  /* 浅色网页正文改为深色，避免继承桌面深色主题的浅色字 */
+  .page { color:#232323; }
+  .paper { color:#2b2b2b; }
+  .muted-note { color:#7c7466; }
+  .bpost .d { color:#6f6a60; }
+  .blog-list .bpost .t { color:#1f1f1f; }
+  .paper h2, .paper h3 { color:#1a1a1a; }
+  .login-box h3 { color:#333; }
+</style>
+
 <body>
 
 <div id="title-screen">
@@ -3333,6 +3344,12 @@ setTimeout(() => {
   buildDesktop = buildDesktop;
   ensureWindow = ensureWindow;
 }, 0);
+
+/* ===== 补丁：章节解锁不再弹全屏卡片，改为角落通知 ===== */
+function showChapterCard(c) {
+  if (!has('startedDesktop')) return;
+  addNotification('章节解锁', '「' + c.title + '」已记录到笔记', () => openApp('notes'));
+}
 
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
