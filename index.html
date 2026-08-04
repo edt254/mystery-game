@@ -3476,6 +3476,67 @@ document.addEventListener('keydown', e => {
   submitSearch(form);
 });
 
+/* ===== 补丁：抉择页异常线索计数字段名修正（sup） ===== */
+function renderJournalV2() {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.toggle('active', b.getAttribute('data-jtab') === journalTab));
+  const body = $('journal-body');
+  const typeName = { key: '<span class="clue-mark key">关键</span>', mislead: '<span class="clue-mark mislead">存疑</span>', super: '<span class="clue-mark super">异常</span>', story: '<span class="clue-mark story">剧情</span>' };
+  const typeLabel = { key: '关键线索', mislead: '可能为误导', super: '异常线索', story: '剧情线索' };
+  if (journalTab === 'chapters') {
+    body.innerHTML = CHAPTERS.map(c => {
+      const on = save.chaptersSeen.includes(c.id);
+      return `<div class="jclue"><div class="jt">${esc(c.title)} <span class="clue-mark ${on ? 'done' : 'story'}">${on ? '已解锁' : '未解锁'}</span></div><div class="jd">${esc(c.line)}</div><div>${esc(c.text)}</div></div>`;
+    }).join('');
+  } else if (journalTab === 'clues') {
+    const chOrder = CHAPTERS.map(c => c.id);
+    const byCh = {};
+    for (const id of Object.keys(CLUES)) {
+      if (!isDiscovered(id)) continue;
+      const ch = CLUES[id].ch || 'c0';
+      (byCh[ch] = byCh[ch] || []).push(id);
+    }
+    let html = '';
+    for (const ch of chOrder) {
+      if (!byCh[ch]) continue;
+      const cmeta = CHAPTERS.find(c => c.id === ch);
+      html += `<div style="margin:16px 0 8px;color:#b0833a;font-size:13px;letter-spacing:.08em">${esc(cmeta ? cmeta.title : ch)}</div>`;
+      for (const id of byCh[ch]) {
+        const c = CLUES[id];
+        const on = isMarked(id);
+        html += `<div class="jclue"><div class="jt">${esc(c.title)} ${typeName[c.type] || ''}</div><div class="jd">${esc(c.date)} · ${esc(typeLabel[c.type] || '')}</div><div>${esc(c.text)}</div><div style="margin-top:8px"><button class="mark-btn ${on ? 'on' : ''}" data-mark="${id}">${on ? '已标记为误导 ✓' : '标记为误导'}</button></div></div>`;
+      }
+    }
+    body.innerHTML = html || '<div class="muted-note" style="line-height:2">还没有发现线索。</div>';
+  } else if (journalTab === 'people') {
+    const list = Object.keys(PEOPLE).filter(k => PEOPLE[k].unlock.some(isDiscovered));
+    body.innerHTML = list.length ? list.map(k => {
+      const p = PEOPLE[k];
+      return `<div class="jperson"><div class="pn">${esc(p.name)}</div><div class="pd">${esc(p.desc)}</div></div>`;
+    }).join('') : '<div class="muted-note" style="line-height:2">还没有足够的信息拼出人物关系。</div>';
+  } else if (journalTab === 'timeline') {
+    const rows = save.discovered.map(id => CLUES[id]).filter(Boolean)
+      .sort((a, b) => (a.date === '未知' ? '9999' : a.date).localeCompare(b.date === '未知' ? '9999' : b.date));
+    body.innerHTML = rows.length ? rows.map(c => `<div class="jtime"><span class="dt">${esc(c.date)}</span><span>${esc(c.title)}</span></div>`).join('')
+      : '<div class="muted-note" style="line-height:2">时间线会随着线索的发现自动整理。</div>';
+  } else if (journalTab === 'final') {
+    const s = endingStats();
+    const rain = canRain();
+    const supTotal = Object.keys(CLUES).filter(id => CLUES[id].type === 'super').length;
+    if (!has('finalUnlocked')) {
+      body.innerHTML = `<div class="jfinal"><div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 已标记误导 ${s.mRight}/4</div>
+        <div class="muted-note" style="line-height:2;margin-top:12px">先读完林晚写给你的那封信（邮箱收件箱），再来做最终抉择。</div></div>`;
+    } else {
+      body.innerHTML = `<div class="jfinal">
+        <div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 已标记误导 ${s.mRight}/4</div>
+        <div class="muted-note" style="line-height:1.8;margin:10px 0">结局取决于你掌握的线索与最终的选择。</div>
+        <button data-end="publish">公开全部证据</button>
+        <button data-end="destroy">销毁证据，让一切沉默</button>
+        <button data-end="rain" ${rain ? '' : 'disabled'}>走进雨巷${rain ? '' : '（条件不足）'}</button>
+      </div>`;
+    }
+  }
+}
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
