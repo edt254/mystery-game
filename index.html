@@ -3447,6 +3447,24 @@ document.addEventListener('click', e => {
   }
 });
 
+/* ===== 补丁：点击搜索输入框不再误触发提交（只有点按钮/回车才搜索） ===== */
+function runAction(el) {
+  const act = el.getAttribute('data-action');
+  if (act === 'search') {
+    const ae = document.activeElement;
+    if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;
+    submitSearch(el);
+    return;
+  }
+  if (act === 'zoom-film') { zoomFilm(el.getAttribute('data-film')); return; }
+  if (act === 'maildraft-login') { maildraftLogin(); return; }
+  if (act === 'zoom-photo') { zoomPhoto(el.getAttribute('data-photo')); return; }
+  if (act === 'zoom-avatar') { zoomAvatar(); return; }
+  if (act === 'archive-login') { archiveLogin(); return; }
+  if (act === 'cloud-login') { cloudLogin(); return; }
+  if (act === 'play-ghost-audio') { playGhostAudio(); toast('雨声……脚步声……还有别的东西。'); return; }
+}
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
