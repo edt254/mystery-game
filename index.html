@@ -5883,6 +5883,94 @@ buildDesktop = function () {
   }
 };
 
+/* ===== v5 内容调整：云盘密码提示只保留阿青回信 ===== */
+delete HINTS.cloud;
+
+SITES['blog.linwan.cn'].pages['/drafts'].html = () => `
+  <div class="page site-blog">
+    <div class="blog-head"><div class="bt">拾 光 · 草稿箱</div></div>
+    <div class="paper">
+      <h3>《身份》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-05 03:12</div>
+      <p style="margin-top:10px">我原名苏小雨。2008 年之后，我改了名字，换了城市，换了人生。</p>
+      <p>我一直在想，那间宿舍里到底发生了什么。</p>
+      <p>我要把自己藏起来，把证据交出去。邮箱密码还是老yangzi。</p>
+      <p class="conf">如果看到这句话，说明他也在看你。别关灯。</p>
+    </div>
+    <div class="paper" style="margin-top:14px">
+      <h3>《证据》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-12 23:58</div>
+      <p style="margin-top:10px">日记扫描件和录音都在拾光云里。</p>
+      <p>如果我真的出了事，就把它们交给能看懂的人。</p>
+    </div>
+    <div class="paper" style="margin-top:14px">
+      <h3>《拍摄计划》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-13 00:20</div>
+      <p style="margin-top:10px">想拍一组雾山的老房子。老城区那几栋还在，雨天的光线最好。</p>
+    </div>
+  </div>`;
+
+SITES['chat.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-chat" style="max-width:760px">
+    <div class="chat-head">雾山老友群（7）</div>
+    <div class="chat-body">
+      <div class="msg other"><div class="who">阿青</div>林晚你回雾山了？怎么也不说一声。<span class="when">06-10 20:14</span></div>
+      <div class="msg me"><div class="who">林晚</div>回来办点事。别跟我爸说。<span class="when">06-10 20:16</span></div>
+      <div class="msg other"><div class="who">老周</div>听说你借了孙总不少钱？行啊你。<span class="when">06-12 22:01</span></div>
+      <div class="msg me"><div class="who">林晚</div>那是生意上的事。<span class="when">06-12 22:03</span></div>
+      <div class="msg other"><div class="who">阿青</div>你最近老往旧学校跑，没事吧？<span class="when">06-14 23:38</span></div>
+      <div class="msg me"><div class="who">林晚</div>我把东西传到拾光云了。晚上别出门。<span class="when">06-14 23:40</span></div>
+      <div style="text-align:center;color:#6b7580;font-size:12px;margin-bottom:10px">老周撤回了一条消息 · 06-14 23:45</div>
+      <div class="msg me"><div class="who">林晚</div>晚安。如果明天我回不了消息，就去看看我的博客。<span class="when">06-14 23:47</span></div>
+      <div class="msg me" style="background:#2f3a2c"><div class="who">林晚</div>（该消息已删除）<span class="when">06-15 01:13</span></div>
+      <div class="msg other"><div class="who">老周</div>人不见了，八成是躲债跑了。<span class="when">06-15 10:02</span></div>
+      <div class="msg other"><div class="who">阿青</div>老周你闭嘴！她不是那样的人。<span class="when">06-15 10:05</span></div>
+    </div>
+    ${has('aqingRead') ? `<div style="text-align:center;margin:6px 0 16px"><a data-nav="chat.linwan.cn/aqing">和阿青私聊 →</a></div>` : ''}
+  </div>`;
+
+SITES['chat.linwan.cn'].pages['/aqing'].html = () => `
+  <div class="page site-chat" style="max-width:760px">
+    <div class="chat-head">和阿青的私聊</div>
+    <div class="chat-body">
+      <div class="msg other"><div class="who">阿青</div>你看到小雨的博客了吗？<span class="when">06-21 12:35</span></div>
+      <div class="msg me"><div class="who">你</div>看到了。<span class="when">06-21 12:36</span></div>
+      <div class="msg other"><div class="who">阿青</div>她大学时总说，雾山的雨是认人的。<span class="when">06-21 12:38</span></div>
+      <div class="msg other"><div class="who">阿青</div>她爸的事，你去她博客看吧。<span class="when">06-21 12:39</span></div>
+    </div>
+  </div>`;
+
+SITES['mail.wushan.cn'].pages['/mail/thanks'].html = () => `
+  <div class="page site-mail">
+    <div class="mail-layout">
+      <div class="mail-side"><div>收件箱</div><div data-nav="mail.wushan.cn/drafts" style="cursor:pointer">草稿箱</div></div>
+      <div class="mail-body">
+        发件人：linwan@wushanmail.cn<br>
+        收件人：你<br>
+        主题：谢谢你<br>
+        时间：2026-06-20 02:31（草稿箱定时发送）<br><br>
+        你找到草稿了。<br>
+        我原名苏小雨。苏承是我父亲。<br>
+        2008 年 3 月 12 日，他死在生日那天。<br>
+        证据在拾光云。<br>
+        如果观雨者找到你——别关灯。<br><br>
+        等到雨停，就把真相发出去吧。
+      </div>
+    </div>
+  </div>`;
+
+SITES['cloud.linwan.cn'].pages['/login'].html = () => `
+  <div class="page site-cloud">
+    ${has('wrong_cloud_3') ? '<div class="del-banner">⚠ 访问记录已上传。</div>' : ''}
+    <div class="cloud-head">拾光云 · 林晚的私人云盘</div>
+    <div class="login-box">
+      <h3>请输入访问密码</h3>
+      <input id="cloud-pwd" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="cloud-err"></div>
+      <button class="btn red" data-action="cloud-login">进 入</button>
+    </div>
+  </div>`;
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
