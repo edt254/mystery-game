@@ -463,6 +463,15 @@
   .dark-input { width:100%; box-sizing:border-box; background:#0d0f13; border:1px solid #262b34; border-radius:6px; padding:8px 12px; font-size:13px; color:#aab3c1; font-family:Consolas,monospace; }
 </style>
 
+<style>
+  .clue-mark.frag { background:#7a5a2a; color:#fff; }
+  .accuse-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+  .accuse-btn { padding:9px 6px; background:#262320; border:1px solid #55493a; color:#c9bda8; cursor:pointer; font-size:13px; border-radius:4px; }
+  .accuse-btn:hover:not(:disabled) { background:#4a1414; }
+  .accuse-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .accuse-btn.picked { background:#4a2c2c; border-color:#8b0f0f; color:#f0d9d0; }
+</style>
+
 <body>
 
 <div id="title-screen">
@@ -4872,6 +4881,537 @@ function confirmName() {
   $('name-screen').classList.remove('show');
   showBoot();
 }
+
+/* ============ v4 本格推理：定罪碎片 / 嫌疑人 / 新站点 ============ */
+Object.assign(CLUES, {
+  f1: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '值班表扫描件', text: '图书馆值班表扫描件：3 月 12 日当页角落印着「打印批次 07-02」，其他页都是「07-01」。' },
+  f2: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '门卫登记簿', text: '门卫登记簿：一行「图书室 罗 取新书 20:15」被铅笔划掉，划痕边上是门卫自己的签名。' },
+  f3: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '侧门的维修记录', text: '物业打卡：3 月 12 日宿舍楼侧门维修工「未到岗」；而公告栏说侧门 3 月 10 日起维修、暂停使用。' },
+  f4: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '发帖设备', text: '苏承遗物清单里登记的手机是摩托罗拉 V3；旧案帖里那条「雨停之前，不要抬头」的发布设备却是诺基亚 6600。' },
+  f5: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '分机来电', text: '苏承手机 21:10 接听了一通来电，号码在通讯录里没有名字；旧站通讯录显示那个分机属于图书馆。' },
+  f6: { type: 'frag', ch: 'c3', date: '2008-03-12', title: '电费单备注', text: '电费档案：3 月 12 日 23:10-23:40 有一次短时用电；同一张单子旁边记着「23:20 图书馆闭馆」。' },
+  f7: { type: 'frag', ch: 'c5', date: '2026-06-13', title: '备忘录碎句', text: '林晚的备忘录：「图书管理员 3/12 值班表 重打 纸不一样」「分机电话 21:10」「室友最近怪怪的，卖了我的相机」' },
+  f8: { type: 'frag', ch: 'c5', date: '2026-06-12', title: '约谈邮件', text: '林晚写给罗芳的邮件：约 6 月 14 日深夜在老城区河堤「当面谈 2008 年的事」；页脚有罗芳的回复「好的，我 22:50 到」。' },
+  f9: { type: 'frag', ch: 'c2', date: '2026-06-20', title: '物证报告', text: '物证报告：林晚手机的防水壳腐蚀程度对应约 23:10 落水；而手机里「雨巷见」短信的发送时间是 23:46。' },
+  f10: { type: 'frag', ch: 'c6', date: '2026-06-15', title: '二手平台的评价', text: '二手平台的商品评价里，买家提到旧手机照片流里「有几张 2008 年的老照片，像是教师宿舍」。' },
+  f11: { type: 'frag', ch: 'c6', date: '2026-06-10', title: '物业检修单', text: '物业检修单：图书馆挂钟「走慢约 20 分钟」，6 月 10 日报修，尚未维修。' },
+  f12: { type: 'frag', ch: 'c3', date: '2008-04-02', title: '笔迹鉴定', text: '笔迹鉴定：苏承「遗书」与其字迹高度相似，但存在两处习惯性差异。' },
+  m9: { type: 'mislead', ch: 'c2', date: '2026-06-14', title: '深夜的账目导出', text: '孙正的电脑在 6 月 14 日深夜有一份账目导出记录——看起来像他在销毁证据。' },
+  m10: { type: 'mislead', ch: 'c2', date: '2026-06-14', title: '监控里的同款外套', text: '老城区路口监控拍到「疑似孙正」的人深夜进入河堤；二手平台显示同款外套共售出三件，其中一件的收货地址是雾山中学图书馆。' }
+});
+
+Object.assign(PEOPLE, {
+  luofang: { name: '罗芳', unlock: ['f1', 'f8'], desc: '雾山中学图书管理员，2008 年起在图书馆工作。温和寡言，与苏承案、林晚案都有工作交集。' },
+  sunzheng: { name: '孙正', unlock: ['m4', 'm9'], desc: '雾山实业经理，孙立军之侄。做假账，和林晚公开吵过架。' },
+  xuwenjing: { name: '许文静', unlock: ['f10'], desc: '摄影师，林晚的合租室友。' },
+  chenyiming: { name: '陈一鸣', unlock: ['t2'], desc: '便利店老板，林晚的前男友，欠着高利贷。' },
+  wuguoqing: { name: '吴国庆', unlock: ['s1', 's9'], desc: '雾山论坛管理员，维护「观雨者」账号。' },
+  zhaojianguo: { name: '赵建国', unlock: ['f3'], desc: '雾山中学总务主任，2008 年时是校工。' },
+  hanmei: { name: '韩梅', unlock: ['t1'], desc: '本地晚报编辑，2008 年压下撤稿的人。' },
+  liuyang: { name: '刘洋', unlock: ['t4'], desc: '老城区房东。' }
+});
+
+Object.assign(CLUES, {
+  s1: { type: 'super', ch: 'c1', date: '2007-06-13', title: '观雨者的注册时间', text: '观雨者的账号 2007 年注册——比雾山论坛建站更早。旧博客迁站时，账号一并迁入论坛。' },
+  s3: { type: 'super', ch: 'c3', date: '2008-03-12', title: '「雨停之前，不要抬头。」', text: '这条帖子发布于 2008-03-12 22:05，发布设备是诺基亚 6600；而苏承遗物清单里的手机是摩托罗拉 V3。' },
+  s9: { type: 'super', ch: 'c6', date: '2007-06-13', title: '旧博客里的「小雨」', text: '观雨者的旧博客第一篇写道：校门口的梧桐树，小雨总在那等爸爸。这是苏承写给自己女儿的。' },
+  s10: { type: 'super', ch: 'c6', date: '2008-03-13', title: '停更于案发次日', text: '旧博客最后一篇写于 2008-03-13：「他走了。雨停之前，不要抬头。我答应过他。」2008 年后，账号由他人登录维护。' },
+  s11: { type: 'super', ch: 'c6', date: '未知', title: '每年 3 月 12 日的访客', text: '雨巷旧版镜像的访客日志里，同一个 IP 从 2008 年起，每年 3 月 12 日访问一次；2008-03-13 之后，账号登录地点是雾山中学图书馆。' }
+});
+
+const SUSPECTS = [
+  { id: 'luofang', name: '罗芳', role: '图书管理员' },
+  { id: 'sunzheng', name: '孙正', role: '雾山实业经理' },
+  { id: 'xuwenjing', name: '许文静', role: '摄影师·室友' },
+  { id: 'chenyiming', name: '陈一鸣', role: '便利店老板·前男友' },
+  { id: 'wuguoqing', name: '吴国庆', role: '论坛管理员' },
+  { id: 'zhaojianguo', name: '赵建国', role: '总务主任' },
+  { id: 'hanmei', name: '韩梅', role: '晚报编辑' },
+  { id: 'liuyang', name: '刘洋', role: '老城区房东' }
+];
+function fragCount() {
+  return Object.keys(CLUES).filter(id => CLUES[id].type === 'frag' && isDiscovered(id)).length;
+}
+function accuse(id) {
+  save.accused = id;
+  persist();
+  const s = SUSPECTS.find(x => x.id === id);
+  toast('你指认了：' + (s ? s.name : id));
+  renderJournal();
+}
+
+/* ============ 新站点 ============ */
+Object.assign(SITES, {
+  'er-shou.cn': {
+    name: '二手集市',
+    pages: {
+      '/': {
+        title: '二手集市',
+        mount: (el) => {
+          discover('f10');
+          discover('m10');
+        },
+        html: () => `
+          <div class="page site-cloud">
+            <div class="cloud-head">二手集市 · 雾山站</div>
+            <div style="padding:16px 0">
+              <div class="file-row"><span>📱 旧手机，功能正常（已售出）</span><span class="muted-note">6-15</span></div>
+              <div class="file-row"><span>🧥 雾山实业同款外套（三件已售）</span><span class="muted-note">6-16</span></div>
+              <div class="file-row"><span>📷 九成新相机（卖家：许文静）</span><span class="muted-note">6-17</span></div>
+            </div>
+            <div class="paper" style="line-height:2">
+              <b>商品评价</b><br>
+              「手机不错，就是相册没清干净，里面有几张 2008 年的老照片，像是教师宿舍。」——6-16 评价<br>
+              「外套是正品，和我对象公司发的同款。」——6-17 评价<br>
+              「（外套）收货地址写的是雾山中学图书馆，代收的。」——6-17 追加
+            </div>
+          </div>`
+      }
+    }
+  },
+  'wuye.wushan.cn': {
+    name: '雾山物业',
+    pages: {
+      '/': {
+        title: '物业维修记录',
+        mount: (el) => {
+          discover('f11');
+          discover('f3');
+        },
+        html: () => `
+          <div class="page site-cloud">
+            <div class="cloud-head">雾山物业 · 维修记录</div>
+            <div style="padding:16px 0">
+              <div class="file-row"><span>🔧 图书馆挂钟走慢（报修 6-10，未维修）</span><span class="muted-note">约慢 20 分钟</span></div>
+              <div class="file-row"><span>🔧 宿舍楼侧门维修（3-10 派单，3-12 工人未到岗）</span><span class="muted-note">2008</span></div>
+              <div class="file-row"><span>🔧 图书馆后门监控（6-11 新装）</span><span class="muted-note">2026</span></div>
+            </div>
+          </div>`
+      }
+    }
+  },
+  'dianfei.wushan.cn': {
+    name: '电费档案',
+    pages: {
+      '/': {
+        title: '电费档案',
+        mount: (el) => discover('f6'),
+        html: () => `
+          <div class="page site-cloud">
+            <div class="cloud-head">雾山县供电 · 电费档案</div>
+            <div class="paper" style="margin-top:16px;line-height:2">
+              <b>雾山中学 · 2008 年 3 月</b><br><br>
+              总用电：2140 度<br>
+              备注：3 月 12 日 23:10-23:40 有短时用电波动（图书馆片区）。<br>
+              （旁边档案页：图书馆值班记录 3 月 12 日 23:20 闭馆）
+            </div>
+          </div>`
+      }
+    }
+  }
+});
+
+/* ============ 档案 / 邮件 / 云盘新页面 ============ */
+Object.assign(SITES['police.wushan.cn'].pages, {
+  '/case/ws-lib-duty': {
+    title: '图书馆值班表',
+    mount: (el) => discover('f1'),
+    html: () => `
+      <div class="page site-archive">
+        <div class="archive-head">雾山县公安局 · 卷内附件</div>
+        <div class="doc">
+          <h2>雾山中学图书馆值班表（2008 年 3 月）</h2>
+          <div class="record">3 月 12 日（周三）：值班人 罗　晚 18:30-23:30<br>打印批次：07-02</div>
+          <div class="record">其他日期页：打印批次均为 07-01</div>
+          <div class="muted-note" style="margin-top:12px">（扫描件 · 附于案卷 WS-2008-0312）</div>
+        </div>
+      </div>`
+  },
+  '/case/ws-guard-log': {
+    title: '门卫登记簿',
+    mount: (el) => discover('f2'),
+    html: () => `
+      <div class="page site-archive">
+        <div class="archive-head">雾山县公安局 · 卷内附件</div>
+        <div class="doc">
+          <h2>教师宿舍楼门卫登记簿（2008 年 3 月 12 日）</h2>
+          <div class="record">20:15　图书室 罗 取新书 <span style="text-decoration:line-through;color:#777">（整行被铅笔划掉）</span><br>签名：陈国栋</div>
+          <div class="record">21:00-23:00　未见异常人员出入。<br>签名：陈国栋</div>
+          <div class="muted-note" style="margin-top:12px">（扫描件）</div>
+        </div>
+      </div>`
+  },
+  '/case/ws-relics': {
+    title: '苏承遗物清单',
+    mount: (el) => {
+      discover('f4');
+      discover('f5');
+    },
+    html: () => `
+      <div class="page site-archive">
+        <div class="archive-head">雾山县公安局 · 卷内附件</div>
+        <div class="doc">
+          <h2>苏承遗物清单</h2>
+          <div class="record">手机：摩托罗拉 V3（电池亏电）<br>录音机：磁带一盘（空白）<br>笔记本、教案若干</div>
+          <div class="record">通话记录（3 月 12 日）：<br>21:10 来电 0768-44**21（无通讯录条目）<br>22:03 无记录</div>
+          <div class="muted-note" style="margin-top:12px">（0768-44**21 对应雾山中学图书馆分机，见旧站通讯录）</div>
+        </div>
+      </div>`
+  },
+  '/case/ws-physical-2026': {
+    title: '物证报告（2026）',
+    mount: (el) => discover('f9'),
+    html: () => `
+      <div class="page site-archive">
+        <div class="archive-head">雾山县公安局 · 物证报告</div>
+        <div class="doc">
+          <h2>林晚手机 · 物证检验（摘要）</h2>
+          <div class="record">手机防水壳腐蚀程度：对应落水时间约 6 月 14 日 23:10 前后。<br>手机内短信（23:46）：「雨巷见」（发件人 170****0000）</div>
+          <div class="muted-note" style="margin-top:12px">落水时间早于短信发送时间约 36 分钟。</div>
+        </div>
+      </div>`
+  },
+  '/case/ws-forensics': {
+    title: '笔迹鉴定',
+    mount: (el) => discover('f12'),
+    html: () => `
+      <div class="page site-archive">
+        <div class="archive-head">雾山县公安局 · 卷内附件</div>
+        <div class="doc">
+          <h2>笔迹鉴定（苏承遗书）</h2>
+          <div class="record">结论：与苏承生前字迹高度相似。<br>说明：存在两处习惯性差异（「了」字勾笔方向、「我」字起笔位置），不排除他人仿写。</div>
+          <div class="muted-note" style="margin-top:12px">（2008-04-02）</div>
+        </div>
+      </div>`
+  }
+});
+
+SITES['mail.wushan.cn'].pages['/mail/draft-luofang'] = {
+  title: '草稿 · 约罗芳',
+  mount: (el) => discover('f8'),
+  html: () => `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">草稿箱</div></div>
+        <div class="mail-body">
+          收件人：luofang@wushanmail.cn<br>
+          主题：想和你聊聊 2008 年<br>
+          时间：2026-06-12 23:40（草稿）<br><br>
+          罗老师，我是林晚。我最近在整理一些旧资料，想当面请教你。<br>
+          6 月 14 日晚上 23:00，老城区河堤边，可以吗？<br><br>
+          <i>——页脚：罗芳 6-13 09:12 回复「好的，我 22:50 到。」</i>
+        </div>
+      </div>
+    </div>`
+};
+
+SITES['cloud.linwan.cn'].pages['/file/memo'] = {
+  title: '备忘录',
+  mount: (el) => discover('f7'),
+  html: () => `
+    <div class="page site-cloud">
+      <div class="cloud-head">拾光云 · 备忘录</div>
+      <div class="paper" style="margin-top:16px;line-height:2.1">
+        6-05　图书管理员 3/12 值班表 重打 纸不一样<br>
+        6-08　分机电话 21:10<br>
+        6-10　孙经理的密码贴在显示器下面，看到了<br>
+        6-12　室友最近怪怪的，卖了我的相机<br>
+        6-13　雨巷见。我约了罗老师。
+      </div>
+    </div>`
+};
+
+Object.assign(SEARCH, {
+  '二手': [{ t: '二手集市', u: 'er-shou.cn/', d: '雾山本地二手平台。' }],
+  '物业': [{ t: '雾山物业 · 维修记录', u: 'wuye.wushan.cn/', d: '报修与维修记录。' }],
+  '电费': [{ t: '电费档案', u: 'dianfei.wushan.cn/', d: '供电局电费档案。' }],
+  '罗芳': [{ t: '案卷附件 · 图书馆值班表', u: 'police.wushan.cn/case/ws-lib-duty', d: '雾山中学图书馆值班表扫描件。' }],
+  '孙正': [{ t: '雾山实业', u: 'wushan-industry.cn/', d: '雾山实业有限公司。' }],
+  '值班表': [{ t: '案卷附件 · 图书馆值班表', u: 'police.wushan.cn/case/ws-lib-duty', d: '雾山中学图书馆值班表扫描件。' }],
+  '笔迹': [{ t: '案卷附件 · 笔迹鉴定', u: 'police.wushan.cn/case/ws-forensics', d: '苏承遗书笔迹鉴定。' }],
+  '备忘录': [{ t: '拾光云 · 备忘录', u: 'cloud.linwan.cn/file/memo', d: '林晚的手机备忘录。' }]
+});
+
+/* ============ 观雨者理性化（镜像与旧博客补注） ============ */
+SITES['mirror.yuxiang2026.net'].pages['/'].html = () => `
+  <div class="page site-mirror">
+    <div class="dark-page">
+      <div class="red">雨。</div>
+      <div class="dim" style="margin-top:40px">2007 年版 · 访客日志</div>
+      <div class="red" style="margin-top:20px;font-size:13px">
+        2008-03-12 / 2012-03-12 / 2016-03-12 / 2020-03-12 / 2024-03-12<br>
+        同一 IP：172.16.0.7<br>
+        2008-03-13 之后：账号登录地点为雾山中学图书馆
+      </div>
+      <div class="dim" style="margin-top:40px">如果雨停了，就不要来了。</div>
+    </div>
+  </div>`;
+
+/* ============ 新结局文案 ============ */
+Object.assign(ENDINGS, {
+  A: {
+    title: '真相大白', tag: '#图书馆的雨',
+    body: `你拼出了全部碎片，指认了罗芳。
+警方在图书馆后屋找到了当年销毁的磁带与旧发票。
+2008 年 3 月 12 日：罗芳伪造图书采购发票被苏承发现，她怕身败名裂，在宿舍将他勒毙，用录音机播放「我没事」骗走前来谈话的赵德厚与钱卫国，再用苏承的手机发出最后一条帖子。
+2026 年 6 月 14 日：林晚约她夜谈，她利用图书馆慢二十分钟的挂钟制造不在场，杀害林晚，用延时短信伪造她还活着，嫁祸给孙正。
+雨停了。这一次，真相没有随雨流走。`
+  },
+  B: {
+    title: '无人知晓', tag: '#雨巷',
+    body: `你把证据压缩进一个文件夹，然后点下了删除。
+罗芳依旧在图书馆上班。孙正因为那晚的「账目导出」被带走问话，又因为没有实据被放了出来。
+雾山实业的公告还挂在首页，论坛的帖子一条条沉下去。
+两年后的 3 月 12 日，有人看到图书管理员一个人去了老城区。
+她每年都去。`
+  },
+  C: {
+    title: '消失的拾光者', tag: '#失踪',
+    body: `你握着那些碎片，却没能拼出完整的形状。
+孙正被指认、被带走、又被释放——你掌握的每一枚碎片都孤零零地，无法相互印证。
+林晚的手机最终归档为「意外落水」。
+图书馆的值班表换了新的一本，旧的那页不知去向。
+只有观雨者还每年 3 月 12 日来访。
+你最终什么也没能证明。`
+  },
+  D: {
+    title: '雾中雨', tag: '第二卷 · 未完待续',
+    body: `你以「观雨者」的名义，把真相留在了雨巷的旧版镜像里。
+没有署名，没有证据链的完整呈现——只有一串碎片，留给下一个看得懂的人。
+罗芳还在图书馆。每年 3 月 12 日，她还是会登录那个账号，去老城区走一圈。
+雨巷没有入口，也没有出口。
+它只是借了你的眼睛，看了一眼这个世界。
+第二卷，从你这里开始。`
+  }
+});
+
+/* ============ 指认与结局判定 ============ */
+function computeEndingV4(choice) {
+  const s = endingStats();
+  const frags = fragCount();
+  if (choice === 'rain' && canRain()) return 'D';
+  if (choice === 'destroy') return 'B';
+  if (choice === 'publish') {
+    if (save.accused === 'luofang' && frags >= 10) return 'A';
+    return 'C';
+  }
+  return 'C';
+}
+setTimeout(() => { computeEnding = computeEndingV4; }, 0);
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-accuse]');
+  if (a) { accuse(a.getAttribute('data-accuse')); return; }
+});
+
+/* ============ v4 任务日志（碎片 / 指认）与页面覆盖 ============ */
+function renderJournalV2() {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.toggle('active', b.getAttribute('data-jtab') === journalTab));
+  const body = $('journal-body');
+  const typeName = { key: '<span class="clue-mark key">关键</span>', mislead: '<span class="clue-mark mislead">存疑</span>', super: '<span class="clue-mark super">异常</span>', story: '<span class="clue-mark story">剧情</span>', frag: '<span class="clue-mark frag">碎片</span>' };
+  const typeLabel = { key: '关键线索', mislead: '可能为误导', super: '异常线索', story: '剧情线索', frag: '证据碎片' };
+  if (journalTab === 'chapters') {
+    body.innerHTML = CHAPTERS.map(c => {
+      const on = save.chaptersSeen.includes(c.id);
+      return `<div class="jclue"><div class="jt">${esc(c.title)} <span class="clue-mark ${on ? 'done' : 'story'}">${on ? '已解锁' : '未解锁'}</span></div><div class="jd">${esc(c.line)}</div><div>${esc(c.text)}</div></div>`;
+    }).join('');
+  } else if (journalTab === 'clues') {
+    const chOrder = CHAPTERS.map(c => c.id);
+    const byCh = {};
+    for (const id of Object.keys(CLUES)) {
+      if (!isDiscovered(id)) continue;
+      const ch = CLUES[id].ch || 'c0';
+      (byCh[ch] = byCh[ch] || []).push(id);
+    }
+    let html = '';
+    for (const ch of chOrder) {
+      if (!byCh[ch]) continue;
+      const cmeta = CHAPTERS.find(c => c.id === ch);
+      html += `<div style="margin:16px 0 8px;color:#b0833a;font-size:13px;letter-spacing:.08em">${esc(cmeta ? cmeta.title : ch)}</div>`;
+      for (const id of byCh[ch]) {
+        const c = CLUES[id];
+        const on = isMarked(id);
+        html += `<div class="jclue"><div class="jt">${esc(c.title)} ${typeName[c.type] || ''}</div><div class="jd">${esc(c.date)} · ${esc(typeLabel[c.type] || '')}</div><div>${esc(c.text)}</div><div style="margin-top:8px"><button class="mark-btn ${on ? 'on' : ''}" data-mark="${id}">${on ? '已标记为误导 ✓' : '标记为误导'}</button></div></div>`;
+      }
+    }
+    body.innerHTML = html || '<div class="muted-note" style="line-height:2">还没有发现线索。</div>';
+  } else if (journalTab === 'reason') {
+    body.innerHTML = COMBO_ORDER.map(id => {
+      const c = COMBOS[id];
+      const done = has(c.flag);
+      const need = c.need.map(x => `<span class="${isDiscovered(x) ? 'ok' : ''}">${esc(CLUES[x].title)}</span>`).join(' · ');
+      return `<div class="combo-card"><div class="ct">${esc(c.name)} ${done ? '<span class="clue-mark done">已合成</span>' : ''}</div><div class="need">需要：${need}</div><div>${esc(c.text)}</div><button class="combo-btn ${done ? 'done' : ''}" data-combo="${id}" ${done || !c.need.every(isDiscovered) ? 'disabled' : ''}>${done ? '已合成' : '合 成'}</button></div>`;
+    }).join('') + '<div class="muted-note" style="margin-top:10px">把相关的证据拼在一起，也许能看见更多。</div>';
+  } else if (journalTab === 'hint') {
+    body.innerHTML = Object.keys(HINTS).map(id => {
+      const h = HINTS[id];
+      return `<div class="hint-card"><div class="ht">${esc(h.title)}</div><div class="hb">${esc(hintText(id))}</div><button class="hint-btn" data-hint="${id}">下一条提示</button></div>`;
+    }).join('') + '<div class="muted-note" style="margin-top:10px">提示可在设置中关闭。</div>';
+  } else if (journalTab === 'dark') {
+    const lines = DARK_LINES.filter(l => l.stage()).map(l => `<div class="dark-msg"><span class="who">观雨者</span> ${esc(l.text.replace('{name}', nameOf()))}</div>`).join('');
+    const sent = (save.darkSent || []).map(m => `<div class="dark-msg" style="text-align:right"><span class="me-w">你</span> ${esc(m)}</div>`).join('');
+    body.innerHTML = `<div class="dark-chat">${lines}${sent}<div class="dark-in"><input id="dark-input" placeholder="说点什么……" autocomplete="off"><button data-action="dark-send">发 送</button></div></div>`;
+  } else if (journalTab === 'people') {
+    const list = Object.keys(PEOPLE).filter(k => PEOPLE[k].unlock.some(isDiscovered));
+    let html = list.length ? list.map(k => {
+      const p = PEOPLE[k];
+      return `<div class="jperson"><div class="pn">${esc(p.name)}</div><div class="pd">${esc(p.desc)}</div></div>`;
+    }).join('') : '<div class="muted-note" style="line-height:2">还没有足够的信息拼出人物关系。</div>';
+    const qs = Object.keys(QUESTS).filter(k => QUESTS[k].start()).map(k => {
+      const q = QUESTS[k];
+      const done = q.done();
+      return `<div class="quest-line ${done ? 'done' : ''}">支线 · ${esc(q.name)}：${done ? '已完成' : '进行中'}</div>`;
+    }).join('');
+    body.innerHTML = html + (qs ? '<div style="margin-top:12px;border-top:1px solid #38332b;padding-top:10px">' + qs + '</div>' : '');
+  } else if (journalTab === 'timeline') {
+    const rows = save.discovered.map(id => CLUES[id]).filter(Boolean)
+      .sort((a, b) => (a.date === '未知' ? '9999' : a.date).localeCompare(b.date === '未知' ? '9999' : b.date));
+    body.innerHTML = rows.length ? rows.map(c => `<div class="jtime"><span class="dt">${esc(c.date)}</span><span>${esc(c.title)}</span></div>`).join('')
+      : '<div class="muted-note" style="line-height:2">时间线会随着线索的发现自动整理。</div>';
+  } else if (journalTab === 'final') {
+    const s = endingStats();
+    const rain = canRain();
+    const supTotal = Object.keys(CLUES).filter(id => CLUES[id].type === 'super').length;
+    const frags = fragCount();
+    let choices = '';
+    if (!has('choice1') && has('choice1_offered')) choices += `<div class="choice-pending"><div class="cp">你发现了一些东西——要不要告诉阿青？</div><button data-c1="tell">告诉阿青</button><button data-c1="secret">先保密</button></div>`;
+    if (!has('choice2') && has('choice2_offered')) choices += `<div class="choice-pending"><div class="cp">雨巷在等你回应。</div><button data-c2="reply">回应雨巷</button><button data-c2="silent">保持沉默</button></div>`;
+    let history = '';
+    if (has('choice1')) history += `<div class="choice-done">抉择一：${save.flags.choice1 === 'tell' ? '你告诉了阿青' : '你选择了保密'}</div>`;
+    if (has('choice2')) history += `<div class="choice-done">抉择二：${save.flags.choice2 === 'reply' ? '你回应了雨巷' : '你保持沉默'}</div>`;
+    let accuseHtml = '';
+    if (has('finalUnlocked')) {
+      const picked = save.accused ? SUSPECTS.find(x => x.id === save.accused) : null;
+      accuseHtml = `<div style="border-top:1px solid #38332b;margin-top:12px;padding-top:10px">
+        <div style="font-size:13px;color:#e8dcc8;margin-bottom:6px">碎片 ${frags}/12 · 指认真凶</div>
+        <div class="accuse-grid">${SUSPECTS.map(x => `<button class="accuse-btn${save.accused === x.id ? ' picked' : ''}" data-accuse="${x.id}">${esc(x.name)}<br><span style="font-size:11px;color:#8b8375">${esc(x.role)}</span></button>`).join('')}</div>
+        <div class="muted-note" style="font-size:12px;margin-top:6px">${picked ? '你已指认：' + esc(picked.name) : '碎片足够多时，指认才有意义。'}</div>
+      </div>`;
+    }
+    if (!has('finalUnlocked')) {
+      body.innerHTML = `<div class="jfinal"><div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 碎片 ${frags}/12</div>${choices}${history}
+        <div class="muted-note" style="line-height:2;margin-top:12px">先读完林晚写给你的那封信（邮箱收件箱），再来做最终抉择。</div></div>`;
+    } else {
+      body.innerHTML = `<div class="jfinal">
+        <div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 碎片 ${frags}/12</div>${choices}${history}${accuseHtml}
+        <div class="muted-note" style="line-height:1.8;margin:10px 0">结局取决于你掌握的碎片、指认与最终的选择。</div>
+        <button data-end="publish">公开全部证据${save.accused ? '' : '（需先指认）'}</button>
+        <button data-end="destroy">销毁证据，让一切沉默</button>
+        <button data-end="rain" ${rain ? '' : 'disabled'}>走进雨巷${rain ? '' : '（条件不足）'}</button>
+      </div>`;
+    }
+  }
+}
+
+/* ===== 页面覆盖：案卷附录 / 草稿链接 / 云盘备忘录 / 新闻 ===== */
+SITES['police.wushan.cn'].pages['/case/WS-2008-0312'].html = () => `
+  <div class="page site-archive">
+    <div class="archive-head">雾山县公安局 · 案件档案查询系统</div>
+    <div class="doc">
+      <h2>案卷 WS-2008-0312</h2>
+      <div class="record">
+        <b>结案报告（摘要）</b> · 2008-03-20<br>
+        死者：苏承，男，1972 年生，雾山中学教师。<br>
+        死因：自缢。现场门窗完好，无搏斗痕迹。排除他杀。家属无异议。
+      </div>
+      <div class="record">
+        <b>笔录 2008-0312-A</b> · 门卫 陈某某<br>
+        当晚 21:00 前后未见异常人员出入。教师宿舍楼大门未锁。
+      </div>
+      <div class="record conf">
+        <b>笔录 2008-0312-B（未归档）</b> · 值班教师 罗某某<br>
+        当晚 21:50 左右，校长赵德厚、教务主任钱卫国进入教师宿舍楼，约 23:00 离开。<br>
+        我认得他们，因为当时问了句「这么晚还查寝啊」，赵校长说「来关心一下苏老师」。<br>
+        次日清晨，苏老师被发现死亡。
+      </div>
+      <div class="record">
+        <b>卷内附件</b><br>
+        <a data-nav="police.wushan.cn/case/ws-lib-duty">图书馆值班表（扫描件）</a><br>
+        <a data-nav="police.wushan.cn/case/ws-guard-log">门卫登记簿（扫描件）</a><br>
+        <a data-nav="police.wushan.cn/case/ws-relics">苏承遗物清单</a><br>
+        <a data-nav="police.wushan.cn/case/ws-forensics">笔迹鉴定</a><br>
+        <a data-nav="police.wushan.cn/case/ws-physical-2026">林晚手机 · 物证报告（2026）</a>
+      </div>
+      <div class="muted-note" style="margin-top:14px">存档副本：2008.wushan.cn/confidential/20080312</div>
+    </div>
+  </div>`;
+
+SITES['mail.wushan.cn'].pages['/drafts'].html = () => `
+  <div class="page site-mail">
+    <div class="mail-layout">
+      <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">草稿箱</div></div>
+      <div class="mail-body">
+        <b>《真相（未发送）》</b> · 2026-06-14 23:58<br><br>
+        致所有看到这封信的人：<br>
+        我叫林晚，原名苏小雨。我的父亲苏承，雾山中学教师，2008 年 3 月 12 日死于雾山中学教师宿舍。<br>
+        官方结论是自杀。但我有证据表明，那晚的「值班记录」有问题——图书馆的值班表被重打过，门卫登记簿被划掉过一行。<br>
+        我把证据放在拾光云，请交给能看懂的人。<br>
+        如果雨停了，请替我看看雾山。<br><br>
+        <hr style="border:none;border-top:1px solid #e0e5ea;margin:14px 0">
+        <div class="muted-note"><a data-nav="mail.wushan.cn/mail/draft-luofang">另一封草稿：《想和你聊聊 2008 年》→</a></div>
+      </div>
+    </div>
+  </div>`;
+
+SITES['cloud.linwan.cn'].pages['/files'].html = () => `
+  <div class="page site-cloud">
+    <div class="cloud-head">拾光云 · 文件（5）</div>
+    <div style="padding:16px 0">
+      <div class="file-row" data-nav="cloud.linwan.cn/file/diary"><span>📄 苏承日记（扫描）.txt</span><span class="muted-note">2008-03</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/transcript"><span>📄 录音转写.txt</span><span class="muted-note">2026-06-13</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/iou"><span>🖼️ 借条.jpg</span><span class="muted-note">2025-09</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/memo"><span>📄 备忘录.txt</span><span class="muted-note">2026-06</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/letter"><span>📄 真相公开信.docx</span><span class="muted-note">2026-06-14</span></div>
+    </div>
+  </div>`;
+
+SITES['wanbao.wushan.cn'].pages['/news/2026-0620'].html = () => `
+  <div class="page site-news article">
+    <div class="news-head">本地晚报 · wushanwanbao.cn</div>
+    <h1>老城区河堤发现女性遗体 初步判断为失联摄影师林晚</h1>
+    <div class="meta">2026-06-20 · 记者 周方 · 来源：本地晚报</div>
+    <p>本报讯　6 月 20 日上午，雾山县老城区河堤发现一具女性遗体。经家属辨认，确认为 6 月 14 日失联的摄影师林晚（26 岁）。</p>
+    <p>警方初步判断为溺水，具体死因仍在调查中。其手机在河中被找到，已送检。</p>
+    <p>林晚生前正在调查一桩 2008 年的旧案。她的个人博客与社交账号保持原状。</p>
+  </div>`;
+
+/* ===== v4 补充：账目导出记录页 / 云盘文件列表 / 旧站侧门公告 ===== */
+SITES['cloud.linwan.cn'].pages['/file/export'] = {
+  title: '账目导出记录',
+  mount: (el) => discover('m9'),
+  html: () => `
+    <div class="page site-cloud">
+      <div class="cloud-head">拾光云 · 账目导出记录.txt</div>
+      <div class="paper" style="margin-top:16px;line-height:2">
+        文件：tender_export_20260614.dat<br>
+        导出时间：2026-06-14 23:58<br>
+        导出方式：远程会话<br>
+        源 IP：172.16.0.7（雾山中学图书馆机房）<br>
+        会话账号：孙正
+      </div>
+    </div>`
+};
+SITES['cloud.linwan.cn'].pages['/files'].html = () => `
+  <div class="page site-cloud">
+    <div class="cloud-head">拾光云 · 文件（6）</div>
+    <div style="padding:16px 0">
+      <div class="file-row" data-nav="cloud.linwan.cn/file/diary"><span>📄 苏承日记（扫描）.txt</span><span class="muted-note">2008-03</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/transcript"><span>📄 录音转写.txt</span><span class="muted-note">2026-06-13</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/iou"><span>🖼️ 借条.jpg</span><span class="muted-note">2025-09</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/memo"><span>📄 备忘录.txt</span><span class="muted-note">2026-06</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/export"><span>📄 账目导出记录.txt</span><span class="muted-note">2026-06-14</span></div>
+      <div class="file-row" data-nav="cloud.linwan.cn/file/letter"><span>📄 真相公开信.docx</span><span class="muted-note">2026-06-14</span></div>
+    </div>
+  </div>`;
+SITES['2008.wushan.cn'].pages['/'].html = () => `
+  <div class="page site-old">
+    <div class="old-head">雾山中学 · 欢迎您</div>
+    <div class="old-nav"><span class="wayback">2008 存档</span> 首页 · <a data-nav="2008.wushan.cn/board">留言板</a> · 新闻 · 招生</div>
+    <div style="padding:18px 4px">
+      <div class="paper"><b>公告栏</b><br><br>期中考试定于 4 月中旬举行，请各班做好复习安排。<br>校舍改造工程已于 3 月复工，施工期间请注意安全。<br><span class="muted-note">宿舍楼侧门自 3 月 10 日起维修，暂停使用。</span></div>
+      <div class="muted-note" style="margin-top:18px">© 2008 雾山中学网络部 · 本页由雾山实业赞助建设</div>
+    </div>
+  </div>`;
 
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {

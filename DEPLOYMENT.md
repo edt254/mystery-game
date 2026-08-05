@@ -86,3 +86,9 @@ ode .build-parts\test-harness6.js .build-parts\mystery_check.js（28 项全过�
 - 线索：29 → 36；结局判定与关键线索不变
 - 测试：
 ode .build-parts\test-harness7.js .build-parts\mystery_check.js（19 项全过）
+
+## v4 本格推理案件重设计（2026-08-05）
+- 已完成：双案（2008 苏承案 + 2026 林晚案，真凶同一人）、8 名新嫌疑人、12 枚定罪碎片（f1-f12）+ 2 条新误导（m9/m10）、3 个新站点（二手集市/物业记录/电费档案）、档案新附件页、指认系统（指认+碎片≥10 → 真相）、观雨者理性化、新结局文案 A/B/C/D
+- 数据：站点 25、线索 50（5关键/14异常/10误导/9剧情/12碎片）、人物 18
+- 测试：
+ode .build-parts\test-harness8.js .build-parts\mystery_check.js（13 项全过）
