@@ -5413,6 +5413,34 @@ SITES['2008.wushan.cn'].pages['/'].html = () => `
     </div>
   </div>`;
 
+/* ===== 补丁：图标不可拖动（固定布局）+ 删除开机引导便签 ===== */
+const __bd4 = buildDesktop;
+buildDesktop = function () {
+  __bd4();
+  const icWrap = $('icons');
+  if (!icWrap) return;
+  const defs = [['browser', '浏览器', '🌐'], ['email', '邮箱', '✉️'], ['chat', '聊天', '💬'], ['cloud', '云盘', '☁️'], ['notes', '笔记', '📓'], ['settings', '设置', '⚙️'], ['trash', '回收站', '🗑️']];
+  icWrap.innerHTML = '';
+  for (const [app, label, icon] of defs) {
+    const d = document.createElement('div');
+    d.className = 'dicon';
+    d.setAttribute('data-app', app);
+    d.innerHTML = `<div class="ic">${icon}</div><div class="lb">${label}</div>`;
+    d.addEventListener('click', () => {
+      document.querySelectorAll('.dicon').forEach(x => x.classList.remove('sel'));
+      d.classList.add('sel');
+      if (app === 'trash') addNotification('回收站', '空的。也许。', null);
+      else openApp(app);
+    });
+    icWrap.appendChild(d);
+  }
+};
+(function removeGuide() {
+  const g = $('guide-note');
+  if (g) g.remove();
+  flag('guideSeen');
+})();
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
