@@ -395,6 +395,74 @@
   .win-body input, .win-body button, .win-body a, .win-body textarea, .win-body select, #browser-bar input, #browser-bar button { pointer-events:auto; }
 </style>
 
+<style>
+  /* ============ v3：互动与桌面细节样式 ============ */
+  #ctx-menu { position:fixed; z-index:130; min-width:150px; background:#1d2026; border:1px solid #3a3f49; border-radius:7px; padding:5px 0; box-shadow:0 8px 28px rgba(0,0,0,.6); display:none; }
+  #ctx-menu.show { display:block; }
+  .ctx-item { padding:8px 16px; font-size:13px; color:#cdd3dd; cursor:pointer; }
+  .ctx-item:hover { background:#333a46; }
+  .ctx-item.danger { color:#d98a8a; }
+  .ctx-sep { height:1px; background:#33363e; margin:4px 8px; }
+
+  #start-menu { position:absolute; left:8px; bottom:48px; z-index:9; width:230px; background:rgba(24,26,32,.98); border:1px solid #3a3f49; border-radius:9px; padding:8px; display:none; box-shadow:0 10px 34px rgba(0,0,0,.6); }
+  #start-menu.show { display:block; }
+  #start-menu .sm-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:6px; font-size:13.5px; color:#d3dae4; cursor:pointer; }
+  #start-menu .sm-item:hover { background:#333a46; }
+  #start-menu .sm-title { font-size:12px; color:#7d8aa3; padding:6px 12px; letter-spacing:.15em; }
+
+  #guide-note { position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:125; width:min(560px,90vw); background:rgba(22,25,31,.97); border:1px solid #46597a; border-radius:10px; padding:18px 22px; color:#cdd6e4; font-size:13.5px; line-height:2; box-shadow:0 10px 40px rgba(0,0,0,.7); }
+  #guide-note b { color:#8fa3c4; }
+  #guide-note button { margin-top:10px; padding:7px 26px; background:#2c3a52; border:1px solid #46597a; color:#e5eaf3; cursor:pointer; }
+
+  #rename-box { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:135; background:#1d2026; border:1px solid #46597a; border-radius:8px; padding:20px 24px; display:none; }
+  #rename-box.show { display:block; }
+  #rename-box input { width:210px; padding:8px; background:#0d0f13; border:1px solid #3a3f49; color:#e2e6ed; font-size:14px; }
+  #rename-box button { margin-top:12px; padding:6px 20px; background:#2c3a52; border:1px solid #46597a; color:#e5eaf3; cursor:pointer; }
+
+  .win { transition:opacity .12s ease, transform .12s ease; }
+  .win.opening { animation:winopen .16s ease; }
+  @keyframes winopen { from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)} }
+
+  .del-banner { background:#3a1a1a; border:1px solid #7a3a3a; color:#e0a0a0; font-size:12.5px; padding:6px 14px; text-align:center; }
+
+  .combo-card { background:#262320; border:1px solid #38332b; padding:12px 14px; margin-bottom:10px; font-size:13px; line-height:1.8; }
+  .combo-card .ct { color:#e8dcc8; font-size:14px; }
+  .combo-card .need { color:#8b8375; font-size:12px; }
+  .combo-card .need .ok { color:#7ec67e; }
+  .combo-btn { margin-top:8px; padding:6px 18px; background:#2c3a52; border:1px solid #46597a; color:#e5eaf3; cursor:pointer; font-size:13px; border-radius:4px; }
+  .combo-btn:disabled { opacity:.45; cursor:not-allowed; }
+  .combo-btn.done { background:#2e4a2e; border-color:#3f6b3f; }
+
+  .hint-card { background:#262320; border:1px solid #38332b; padding:11px 14px; margin-bottom:9px; }
+  .hint-card .ht { color:#e8dcc8; font-size:13.5px; }
+  .hint-card .hb { color:#a89f90; font-size:12.5px; margin:5px 0 8px; min-height:18px; line-height:1.8; }
+  .hint-btn { padding:4px 14px; background:#332e26; border:1px solid #55493a; color:#c9bda8; cursor:pointer; font-size:12px; border-radius:3px; }
+
+  .dark-chat { display:flex; flex-direction:column; }
+  .dark-msg { margin-bottom:8px; font-size:13px; line-height:1.8; }
+  .dark-msg .who { color:#7f9cc9; font-size:12px; }
+  .dark-msg .me-w { color:#4f6ef2; font-size:12px; }
+  .dark-in { display:flex; gap:6px; margin-top:10px; }
+  .dark-in input { flex:1; padding:8px; background:#0d0f13; border:1px solid #3a3f49; color:#e2e6ed; font-size:13px; }
+  .dark-in button { padding:6px 18px; background:#2c3a52; border:1px solid #46597a; color:#e5eaf3; cursor:pointer; }
+
+  .quest-line { font-size:12px; color:#b0833a; margin-top:6px; }
+  .quest-line.done { color:#7ec67e; }
+
+  .choice-pending { border:1px solid #7a5a2a; background:#2a2418; padding:12px 14px; margin:10px 0; text-align:left; }
+  .choice-pending .cp { font-size:13.5px; color:#e8dcc8; margin-bottom:8px; }
+  .choice-pending button { margin:4px 6px 4px 0; padding:7px 18px; background:#332e26; border:1px solid #55493a; color:#c9bda8; cursor:pointer; }
+  .choice-pending button:hover { background:#4a1414; }
+  .choice-done { font-size:12.5px; color:#8b8375; margin:4px 0; }
+
+  body.large-text .page, body.large-text .app-view, body.large-text .win-body { font-size:16.5px; }
+  body.large-text .post, body.large-text .paper, body.large-text .mail-body, body.large-text .alumni-card, body.large-text .tieba-item { font-size:15px; }
+
+  .forum-input { width:100%; box-sizing:border-box; background:#fafbfd; border:1px solid #cfd8df; border-radius:6px; padding:9px 12px; font-size:13.5px; color:#333; resize:vertical; font-family:inherit; }
+  .chat-input { width:100%; box-sizing:border-box; background:#14171c; border:1px solid #39424c; border-radius:8px; padding:9px 12px; font-size:13.5px; color:#dfe6ec; resize:vertical; font-family:inherit; }
+  .dark-input { width:100%; box-sizing:border-box; background:#0d0f13; border:1px solid #262b34; border-radius:6px; padding:8px 12px; font-size:13px; color:#aab3c1; font-family:Consolas,monospace; }
+</style>
+
 <body>
 
 <div id="title-screen">
@@ -3739,6 +3807,1071 @@ SITES['chat.linwan.cn'].pages['/'].html = () => `
       <div class="msg other"><div class="who">阿青</div>（私聊备注）她云盘密码还是大学那个，用她爸名字起的。谁也别动。<span class="when">06-16 00:31</span></div>
     </div>
   </div>`;
+
+/* ============ v3 数据：新线索 / 提示 / 组合 / 支线 ============ */
+Object.assign(CLUES, {
+  t6: { type: 'story', ch: 'c4', date: '2026-06-21', title: '被对上的账', text: '你把笔录、纪要和账目放在一起：160 万的缺口，从 2008 年一直空到现在。' },
+  t7: { type: 'story', ch: 'c5', date: '2026-06-21', title: '藏起来的理由', text: '林晚的时间线完整了：她不是失踪，是把自己藏进雨里，等一个能把真相交出去的人。' },
+  s12: { type: 'super', ch: 'c6', date: '2026-06-20', title: '雨巷访客日志里的你', text: '你回应了雨巷。访客日志里多了一行：你的 IP，以及一句「你也会回来的」。' },
+  s13: { type: 'super', ch: 'c6', date: '未知', title: '观雨者的名字', text: '1996 年的合影、2007 年的博客、每年 3 月 12 日的访客——它们指向同一个答案：守雨的人一直在。' },
+  s14: { type: 'super', ch: 'c6', date: '2008-09-01', title: '守雨的人', text: '林守正，1996 年合影时站在苏承身边的校工；2008 年，他收养了苏小雨。而雨巷 2007 年就已经存在了。' },
+  t8: { type: 'story', ch: 'c3', date: '2008-03-16', title: '周方的坚持', text: '记者周方把未刊发的稿子存了十八年。他说：总有人要记得。' },
+  t9: { type: 'story', ch: 'c5', date: '2026-06-21', title: '阿青的承诺', text: '阿青说：小雨托付的事，她一定会做完。云盘密码，就是她给小雨起的绰号。' }
+});
+
+const HINTS = {
+  archive: { title: '警方档案', levels: ['有一个日期，能打开雾山中学的档案。', '去博客《苏承老师》里找那个日期，整理成 8 位数字。', '1972 年 3 月 12 日 → 19720312。'] },
+  maildraft: { title: '邮箱草稿箱', levels: ['林晚说密码还是老样子。', '草稿《身份》里写了规则：去掉姓，小写拼音。', '苏小雨 → 小雨 → xiaoyu。'] },
+  cloud: { title: '拾光云', levels: ['阿青知道这个密码的来历。', '老友群私聊备注 + 草稿《证据》：她父亲的名字，小写拼音。', '苏承 → sucheng。'] },
+  hidden: { title: '旧站隐藏页', levels: ['案卷里藏着一个地址。', '第二份笔录的页脚，有一行存档副本的网址。', '地址栏输入 2008.wushan.cn/confidential/20080312。'] },
+  dark: { title: '雨巷', levels: ['有些地方不在搜索引擎里。', '录音转写备注和照片水印里，都写着一个名字。', '地址栏输入 yuxiang2026.net。'] }
+};
+const COMBO_ORDER = ['A', 'B', 'C'];
+const COMBOS = {
+  A: { name: '雾山会的账', need: ['k2', 'k3', 't3'], clue: 't6', flag: 'comboA', text: '笔录里的两个人、会议纪要里的三句话、账目上 160 万的缺口——它们对上了。' },
+  B: { name: '雨巷的眼睛', need: ['s8', 's9', 's11'], clue: 's13', flag: 'comboB', text: '1996 年的合影、2007 年的博客、每年 3 月 12 日的访客——守雨的人一直在。' },
+  C: { name: '她为什么藏起来', need: ['k4', 'k5', 't2'], clue: 't7', flag: 'comboC', text: '身份、日记、深夜的短信——她不是消失，是把自己藏进了雨里。' }
+};
+const QUESTS = {
+  aqing: { name: '阿青的承诺', start: () => has('aqingRead'), done: () => has('quest_aqing_done') },
+  zhoufang: { name: '周方的坚持', start: () => isDiscovered('t1'), done: () => has('quest_zhoufang_done') },
+  linshouzheng: { name: '守雨的人', start: () => isDiscovered('s8'), done: () => has('quest_linshouzheng_done') }
+};
+const DARK_LINES = [
+  { stage: () => !isDiscovered('k1'), text: '雨。' },
+  { stage: () => isDiscovered('k1') && !isDiscovered('k2'), text: '你也在看雨吗。' },
+  { stage: () => isDiscovered('k2') && !isDiscovered('s4'), text: '别抬头。' },
+  { stage: () => isDiscovered('s4') && !has('finalUnlocked'), text: '你来了，{name}。' },
+  { stage: () => has('finalUnlocked'), text: '别关灯，{name}。' }
+];
+
+/* ============ v3 新页面 ============ */
+SITES['blog.linwan.cn'].pages['/post/account'] = {
+  title: '账',
+  html: () => `
+    <div class="page site-blog">
+      <div class="blog-head"><div class="bt">拾 光</div></div>
+      <div class="paper" style="font-size:15px;line-height:2.1">
+        <h2 style="font-size:21px;margin-bottom:10px">账</h2>
+        <div class="muted-note">2026-06-21 · 林晚</div>
+        <p style="margin-top:14px">我把三样东西放在一起：笔录、纪要、账目。</p>
+        <p>160 万，从 2008 年一直空到现在。</p>
+        <p>他们以为雨会把数字冲走。雨只会让它们更清楚。</p>
+      </div>
+    </div>`
+};
+SITES['mail.wushan.cn'].pages['/mail/aqing-reply'] = {
+  title: '阿青的回信',
+  mount: (el) => {
+    flag('quest_aqing_done');
+    discover('t9');
+  },
+  html: () => `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">已打开</div></div>
+        <div class="mail-body">
+          发件人：aqing@wushanmail.cn<br>
+          收件人：你<br>
+          主题：回信<br>
+          时间：2026-06-21 12:40<br><br>
+          谢谢你的回信。<br>
+          小雨把东西托付给我时说过：等有人来问，就把老照片交出去。<br>
+          密码的事，是她大学时用她爸名字起的绰号，只有我知道。<br>
+          她爸的事，你去她博客看吧。<br><br>
+          她在信里说：如果她回不来，请让真相自己走出去。<br>
+          我会做到的。
+        </div>
+      </div>
+    </div>`
+};
+SITES['mail.wushan.cn'].pages['/mail/zhoufang'] = {
+  title: '来自周方',
+  mount: (el) => {
+    flag('quest_zhoufang_done');
+    discover('t8');
+  },
+  html: () => `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">已打开</div></div>
+        <div class="mail-body">
+          发件人：zhoufang@wushanwanbao.cn<br>
+          收件人：你<br>
+          主题：关于苏承案<br>
+          时间：2026-06-21 14:02<br><br>
+          你好。<br>
+          我是《本地晚报》的记者周方。如果你看到了那篇没有见报的稿子，说明你查到苏承案了。<br>
+          那年我 28 岁。稿子被撤后，我存了底稿。<br>
+          总有人要记得。<br>
+          气象站的记录、旧报库的合订本，我都整理在专栏里。需要的话去看看。<br><br>
+          <i>——周方</i>
+        </div>
+      </div>
+    </div>`
+};
+SITES['wanbao.wushan.cn'].pages['/column-zhoufang'] = {
+  title: '周方专栏',
+  html: () => `
+    <div class="page site-news article">
+      <div class="news-head">本地晚报 · 记者周方专栏</div>
+      <h1>周方手记 · 2008</h1>
+      <div class="meta">周方 · 存稿整理</div>
+      <p><b>3 月 12 日 22:40</b>　门卫说没人进去，值班老师却说有人进去了。同一个晚上，两种说法。</p>
+      <p><b>3 月 13 日</b>　校方说「工作压力大」。可苏老师上个月刚续签了合同。</p>
+      <p><b>3 月 16 日</b>　我的稿子被撤了。编辑说：有些事，晚报不合适登。</p>
+      <p>气象站的记录在，旧报库的合订本也在。总有人要记得。</p>
+    </div>`
+};
+SITES['alumni.wushan.cn'].pages['/linshouzheng'] = {
+  title: '林守正',
+  mount: (el) => {
+    flag('quest_linshouzheng_done');
+    discover('s14');
+  },
+  html: () => `
+    <div class="page site-alumni">
+      <div class="alumni-card">
+        <b>林守正（校工）</b><br><br>
+        1996 年合影时，站在苏承身边。<br>
+        2008 年案发后，苏小雨由林守正一家收养，改名林晚。<br><br>
+        档案备注：收养手续办理人——林守正。<br>
+        <div class="muted-note" style="margin-top:10px">1990 年代，林守正负责教师宿舍楼的夜间值班。</div>
+      </div>
+    </div>`
+};
+SITES['chat.linwan.cn'].pages['/aqing'] = {
+  title: '和阿青私聊',
+  html: () => `
+    <div class="page site-chat" style="max-width:760px">
+      <div class="chat-head">和阿青的私聊</div>
+      <div class="chat-body">
+        <div class="msg other"><div class="who">阿青</div>你看到小雨的博客了吗？<span class="when">06-21 12:35</span></div>
+        <div class="msg me"><div class="who">你</div>看到了。<span class="when">06-21 12:36</span></div>
+        <div class="msg other"><div class="who">阿青</div>她大学时总说，雾山的雨是认人的。<span class="when">06-21 12:38</span></div>
+        <div class="msg other"><div class="who">阿青</div>密码那件事，是她用她爸名字起的绰号。她爸的事，你去她博客看吧。<span class="when">06-21 12:39</span></div>
+      </div>
+    </div>`
+};
+
+/* ============ v3 逻辑：互动 / 抉择 / 组合 / 惩罚 ============ */
+function wrongCount(kind) {
+  save.flags['wrong_' + kind] = (save.flags['wrong_' + kind] || 0) + 1;
+  persist();
+  if (save.flags['wrong_' + kind] === 3) {
+    flag('wrong_' + kind + '_3');
+    addNotification('观雨者', '你输错了三次，' + nameOf() + '。它们会记住的。', null);
+    glitchPulse();
+    playTone(120, 0.7, 0.12, 'sawtooth');
+  }
+}
+function archiveLogin() {
+  const v = ($('pwd-input') || {}).value || '';
+  if (v.trim() === '19720312') {
+    save.flags.wrong_archive = 0;
+    persist();
+    flag('archiveOpen');
+    toast('档案已解锁。');
+    navigate('police.wushan.cn/case/WS-2008-0312');
+  } else {
+    const e = $('pwd-err');
+    if (e) e.textContent = '密码错误。';
+    wrongCount('archive');
+    glitchPulse();
+  }
+}
+function cloudLogin() {
+  const v = ($('cloud-pwd') || {}).value || '';
+  if (v.trim().toLowerCase() === 'sucheng') {
+    save.flags.wrong_cloud = 0;
+    persist();
+    flag('cloudOpen');
+    toast('拾光云已打开。');
+    navigate('cloud.linwan.cn/files');
+  } else {
+    const e = $('cloud-err');
+    if (e) e.textContent = '密码错误。';
+    wrongCount('cloud');
+    glitchPulse();
+  }
+}
+function maildraftLogin() {
+  const v = ($('maildraft-pwd') || {}).value || '';
+  if (v.trim().toLowerCase() === 'xiaoyu') {
+    save.flags.wrong_maildraft = 0;
+    persist();
+    flag('mailDraftsOpen');
+    toast('草稿箱已打开。');
+    navigate('mail.wushan.cn/drafts');
+  } else {
+    const e = $('maildraft-err');
+    if (e) e.textContent = '密码错误。';
+    wrongCount('maildraft');
+    glitchPulse();
+  }
+}
+
+function checkChoices() {
+  if (!has('startedDesktop')) return;
+  if (isDiscovered('k2') && !has('choice1') && !has('choice1_offered')) {
+    flag('choice1_offered');
+    addNotification('抉择', '你发现了一些东西——要不要告诉阿青？', () => openApp('notes'));
+  }
+  if (isDiscovered('s4') && !has('choice2') && !has('choice2_offered')) {
+    flag('choice2_offered');
+    addNotification('抉择', '雨巷在等你回应。', () => openApp('notes'));
+  }
+}
+function choose1(kind) {
+  if (has('choice1')) return;
+  flag('choice1', kind);
+  if (kind === 'tell') {
+    addNotification('阿青', '谢谢你告诉我。我去看看她的博客。', () => openApp('email'));
+  } else {
+    addNotification('观雨者', '你做得对，' + nameOf() + '。', () => openApp('notes'));
+  }
+}
+function choose2(kind) {
+  if (has('choice2')) return;
+  flag('choice2', kind);
+  if (kind === 'reply') {
+    discover('s12');
+    addNotification('观雨者', '你会被记住的，' + nameOf() + '。', () => openApp('browser'));
+  }
+}
+
+function forumPost() {
+  const inp = $('forum-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) { const e = $('forum-err'); if (e) e.textContent = '写点什么再发。'; return; }
+  flag('forumPosted', v);
+  toast('已发布。');
+  if (document.activeTab === 'browser' || true) {
+    const p = normalize(activeTab.url);
+    if (p.host === 'bbs.wushan.cn') renderPage();
+  }
+  setTimeout(() => {
+    if (!has('forumReplied')) {
+      flag('forumReplied');
+      addNotification('观雨者', '你也来了，' + nameOf() + '。', () => openApp('browser'));
+    }
+  }, 4000);
+}
+function chatSend() {
+  const inp = $('chat-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) return;
+  flag('chatSent', v);
+  if (!has('chatReplied')) {
+    flag('chatReplied');
+    addNotification('客', '有人在看。', () => openApp('browser'));
+  }
+  toast('已发送。');
+  const p = normalize(activeTab.url);
+  if (p.host === 'den.wuyu.net') renderAppView(lastClickApp || 'browser');
+}
+function replyAqing() {
+  flag('aqingReplying');
+  renderAppView('email');
+}
+function aqingReplySend() {
+  const inp = $('aqing-reply-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) { const e = $('aqing-reply-err'); if (e) e.textContent = '写点什么再发。'; return; }
+  flag('aqingReplied', v);
+  toast('已寄出。');
+  renderAppView('email');
+  setTimeout(() => {
+    addNotification('新邮件', '阿青的回信到了。', () => openApp('email'));
+  }, 5000);
+}
+function darkSend() {
+  const inp = $('dark-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) return;
+  if (!save.darkSent) save.darkSent = [];
+  save.darkSent.push(v);
+  persist();
+  const idx = save.darkSent.length - 1;
+  if (!has('darkReplied_' + idx)) {
+    flag('darkReplied_' + idx);
+    setTimeout(() => {
+      addNotification('观雨者', '……', () => openApp('notes'));
+    }, 2600);
+  }
+  renderJournal();
+}
+function comboDo(id) {
+  const c = COMBOS[id];
+  if (!c) return;
+  if (has(c.flag)) { toast('这个结论你已经拼出来了。', 2000); return; }
+  const missing = c.need.filter(x => !isDiscovered(x));
+  if (missing.length) {
+    toast('还缺少证据：' + missing.map(x => CLUES[x].title).join('、'), 3200);
+    return;
+  }
+  flag(c.flag);
+  discover(c.clue);
+  toast('已合成：「' + c.name + '」');
+  playDiscover();
+  renderJournal();
+}
+function hintText(id) {
+  const h = HINTS[id];
+  if (!h) return '';
+  if (has('hintsOff')) return '提示已在设置中关闭。';
+  const lv = save.hintLevel && save.hintLevel[id] !== undefined ? save.hintLevel[id] : 0;
+  return h.levels[lv];
+}
+function hintNext(id) {
+  if (!save.hintLevel) save.hintLevel = {};
+  save.hintLevel[id] = ((save.hintLevel[id] || 0) + 1) % 3;
+  persist();
+  renderJournal();
+}
+
+function discover(id, silent) {
+  if (isDiscovered(id)) return false;
+  const c = CLUES[id];
+  if (!c) return false;
+  save.discovered.push(id);
+  persist();
+  if (!silent) {
+    playDiscover();
+    toast('已记录新线索：「' + c.title + '」');
+  }
+  checkChapters();
+  checkReactions();
+  checkChoices();
+  return true;
+}
+function flag(k, v) {
+  save.flags[k] = v === undefined ? true : v;
+  persist();
+  checkChapters();
+  checkReactions();
+  checkChoices();
+}
+
+/* ============ v3 桌面细节 ============ */
+(function setupDesktopExtrasDom() {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div id="ctx-menu"></div>
+    <div id="start-menu"><div class="sm-title">拾光 OS</div></div>
+    <div id="guide-note"><b>第一次开机？</b><br>单击桌面图标打开应用 · 窗口可拖动/最大化/最小化 · 浏览器地址栏可输入网址<br>搜索框按回车搜索 · Alt+1~6 切换应用 · M 静音<br><button id="guide-ok">知道了</button></div>
+    <div id="rename-box"><b>重命名</b><br><input id="rename-input" maxlength="10"><div><button id="rename-ok">确定</button><button id="rename-cancel">取消</button></div></div>`;
+  document.body.appendChild(wrap);
+})();
+let renameTarget = null;
+function showCtx(x, y, items) {
+  const m = $('ctx-menu');
+  m.innerHTML = items.map(it => it.sep ? '<div class="ctx-sep"></div>' : `<div class="ctx-item${it.danger ? ' danger' : ''}" data-ctx="${it.id}">${it.label}</div>`).join('');
+  m.classList.add('show');
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.min(x, window.innerWidth - r.width - 8) + 'px';
+  m.style.top = Math.min(y, window.innerHeight - r.height - 8) + 'px';
+}
+function hideCtx() { const m = $('ctx-menu'); if (m) m.classList.remove('show'); }
+function ctxAction(id) {
+  hideCtx();
+  if (id === 'open') openApp(renameTarget);
+  else if (id === 'rename') openRename();
+  else if (id === 'about-icon') addNotification(APPS[renameTarget] ? APPS[renameTarget].name : '回收站', '拾光 OS · 雾山数据中心 · 2008-2026', null);
+  else if (id === 'refresh') { toast('桌面已刷新。', 1200); }
+  else if (id === 'about-desktop') addNotification('拾光 OS', 'v3 深化版 · 22 个网站 · 雨还在下', null);
+  else if (id === 'poweroff') powerOff();
+}
+function powerOff() {
+  $('desktop').classList.remove('show');
+  $('title-screen').classList.remove('hidden');
+  toast('已关机。进度已保存。');
+  gameStarted = false;
+}
+function openRename() {
+  const box = $('rename-box');
+  const inp = $('rename-input');
+  const app = renameTarget;
+  inp.value = (save.iconNames && save.iconNames[app]) || (APPS[app] ? APPS[app].name : '回收站');
+  box.classList.add('show');
+  setTimeout(() => { try { inp.focus(); inp.select(); } catch (e) {} }, 30);
+}
+document.addEventListener('contextmenu', e => {
+  const icon = e.target.closest('.dicon');
+  if (icon) {
+    e.preventDefault();
+    renameTarget = icon.getAttribute('data-app');
+    showCtx(e.clientX, e.clientY, [
+      { id: 'open', label: '打开' },
+      { id: 'rename', label: '重命名' },
+      { sep: true },
+      { id: 'about-icon', label: '关于' }
+    ]);
+    return;
+  }
+  if (e.target.closest('#win-layer') || e.target.closest('#taskbar')) return;
+  if (e.target.closest('#desktop')) {
+    e.preventDefault();
+    showCtx(e.clientX, e.clientY, [
+      { id: 'refresh', label: '刷新桌面' },
+      { id: 'about-desktop', label: '关于拾光 OS' },
+      { sep: true },
+      { id: 'poweroff', label: '关机', danger: true }
+    ]);
+  }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#ctx-menu')) hideCtx();
+  const item = e.target.closest('[data-ctx]');
+  if (item) ctxAction(item.getAttribute('data-ctx'));
+});
+
+const __bd3 = buildDesktop;
+buildDesktop = function () {
+  __bd3();
+  // 任务栏：开始菜单与日期
+  const startBtn = $('start-tb');
+  if (startBtn) {
+    startBtn.onclick = () => {
+      const sm = $('start-menu');
+      sm.classList.toggle('show');
+      if (sm.classList.contains('show')) {
+        const apps = Object.keys(APPS);
+        sm.innerHTML = '<div class="sm-title">拾光 OS</div>' +
+          apps.map(a => `<div class="sm-item" data-sm="${a}">${APPS[a].icon} ${APPS[a].name}</div>`).join('') +
+          '<div class="ctx-sep"></div>' +
+          '<div class="sm-item" data-sm="settings">⚙️ 设置</div>' +
+          '<div class="sm-item danger" data-sm="poweroff">⏻ 关机</div>';
+        sm.querySelectorAll('[data-sm]').forEach(el => {
+          el.onclick = () => {
+            sm.classList.remove('show');
+            const a = el.getAttribute('data-sm');
+            if (a === 'poweroff') powerOff();
+            else if (a === 'settings') openApp('settings');
+            else openApp(a);
+          };
+        });
+      }
+    };
+  }
+  document.addEventListener('click', e => {
+    const sm = $('start-menu');
+    if (sm && !e.target.closest('#start-menu') && !e.target.closest('#start-tb')) sm.classList.remove('show');
+  });
+  setInterval(() => {
+    const c = $('tb-clock');
+    if (!c) return;
+    if (has('darkUnlocked')) {
+      c.textContent = '23:47';
+      const w = $('wallpaper');
+      if (w && Math.random() < 0.02) { w.classList.add('flash'); setTimeout(() => w.classList.remove('flash'), 220); }
+      if (w) w.classList.add('heavy');
+    } else {
+      const d = new Date();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mi = String(d.getMinutes()).padStart(2, '0');
+      c.textContent = mm + '-' + dd + ' ' + hh + ':' + mi;
+    }
+  }, 1000);
+  // 图标位置恢复与拖拽
+  document.querySelectorAll('.dicon').forEach(d => {
+    const app = d.getAttribute('data-app');
+    const pos = save.iconPos && save.iconPos[app];
+    if (pos) { d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px'; d.style.position = 'absolute'; }
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    d.addEventListener('pointerdown', e => {
+      if (e.button === 2) return;
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      ox = d.offsetLeft; oy = d.offsetTop;
+      d.style.position = 'absolute';
+      d.style.zIndex = 3;
+      try { d.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    d.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      d.style.left = (ox + e.clientX - sx) + 'px';
+      d.style.top = (oy + e.clientY - sy) + 'px';
+    });
+    d.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      d.style.zIndex = '';
+      if (!save.iconPos) save.iconPos = {};
+      save.iconPos[app] = { x: parseInt(d.style.left, 10) || 0, y: parseInt(d.style.top, 10) || 0 };
+      persist();
+    });
+  });
+  // 重命名
+  const ok = $('rename-ok'), cancel = $('rename-cancel');
+  if (ok) ok.onclick = () => {
+    const v = ($('rename-input').value || '').trim();
+    if (v && renameTarget) {
+      if (!save.iconNames) save.iconNames = {};
+      save.iconNames[renameTarget] = v;
+      persist();
+      const d = document.querySelector('.dicon[data-app="' + renameTarget + '"] .lb');
+      if (d) d.textContent = v;
+    }
+    $('rename-box').classList.remove('show');
+  };
+  if (cancel) cancel.onclick = () => $('rename-box').classList.remove('show');
+  // 引导便签
+  const g = $('guide-ok');
+  if (g) g.onclick = () => { flag('guideSeen'); $('guide-note').classList.remove('show'); };
+};
+function playBootSound() {
+  [110, 165, 220].forEach((f, i) => playTone(f, 0.7, 0.05, 'sine', i * 0.12));
+}
+const __sb = showBoot;
+showBoot = function () {
+  __sb();
+  playBootSound();
+};
+const __an = addNotification;
+addNotification = function (who, body, act) {
+  __an(who, body, act);
+  if (who === '观雨者') playTone(140, 0.55, 0.07, 'sine');
+  else if (who === '新邮件' || who === '雾山邮箱') playTone(880, 0.18, 0.06, 'triangle');
+  else if (who === '章节解锁') playDiscover();
+};
+const __oa = openApp;
+openApp = function (app) {
+  __oa(app);
+  const ws = winState[app];
+  if (ws && ws.el) {
+    ws.el.classList.remove('opening');
+    void ws.el.offsetWidth;
+    ws.el.classList.add('opening');
+    setTimeout(() => ws.el.classList.remove('opening'), 190);
+  }
+};
+const __ed = enterDesktop;
+enterDesktop = function () {
+  __ed();
+  if (!has('guideSeen')) {
+    const g = $('guide-note');
+    if (g) g.classList.add('show');
+  }
+};
+
+/* ============ v3 性能与兼容 ============ */
+let tbSig = '';
+function updateTaskbar() {
+  const wrap = $('tb-apps');
+  if (!wrap) return;
+  let sig = '';
+  for (const app of Object.keys(winState)) {
+    const ws = winState[app];
+    if (!ws.ever) continue;
+    sig += app + ':' + (ws.open && !ws.minimized ? '1' : '0') + ';';
+    if (app === 'email') sig += emailUnread() + ';';
+    if (app === 'notes') sig += save.discovered.length + ';';
+  }
+  sig += '|' + (isDiscovered('s1') ? 'eye' : '');
+  if (sig === tbSig) return;
+  tbSig = sig;
+  wrap.innerHTML = '';
+  for (const app of Object.keys(winState)) {
+    const ws = winState[app];
+    if (!ws.ever) continue;
+    const b = document.createElement('button');
+    b.className = 'tb-app' + (ws.open && !ws.minimized ? ' active' : '');
+    b.setAttribute('data-app', app);
+    let badge = '';
+    if (app === 'email' && emailUnread() > 0) badge = `<span class="bdg">${emailUnread()}</span>`;
+    if (app === 'notes' && save.discovered.length > 0) badge = `<span class="bdg">${save.discovered.length}</span>`;
+    b.innerHTML = APPS[app].icon + ' ' + APPS[app].name + badge;
+    b.onclick = () => {
+      if (ws.open && !ws.minimized) minimizeApp(app);
+      else if (ws.open && ws.minimized) restoreApp(app);
+      else openApp(app);
+    };
+    wrap.appendChild(b);
+  }
+  const eye = $('tb-eye');
+  if (eye) eye.classList.toggle('hidden', !isDiscovered('s1'));
+}
+function focusApp(app) {
+  const ws = winState[app];
+  if (!ws || !ws.el) return;
+  winZ++;
+  ws.el.style.zIndex = winZ;
+  document.querySelectorAll('.win').forEach(w => w.classList.remove('focus'));
+  ws.el.classList.add('focus');
+  document.querySelectorAll('.tb-app').forEach(b => b.classList.toggle('active', b.getAttribute('data-app') === app));
+  tbSig = '';
+}
+
+function toggleLarge() {
+  flag('largeText', !has('largeText'));
+  document.body.classList.toggle('large-text', has('largeText'));
+  toast(has('largeText') ? '已开启大字号' : '已关闭大字号', 1200);
+}
+function toggleHints() {
+  flag('hintsOff', !has('hintsOff'));
+  toast(has('hintsOff') ? '提示已关闭' : '提示已开启', 1200);
+  renderJournal();
+}
+(function applyLargeSaved() {
+  if (has('largeText')) document.body.classList.add('large-text');
+})();
+
+const __oa2 = openApp;
+openApp = function (app) {
+  __oa2(app);
+  if (app === 'settings') {
+    const ws = winState.settings;
+    if (ws && ws.el) {
+      const body = ws.el.querySelector('.win-body');
+      if (body && !body.querySelector('#set-hints')) {
+        const div = document.createElement('div');
+        div.style.marginTop = '18px';
+        div.style.lineHeight = '2.4';
+        div.innerHTML = `<p>提示：<button class="btn red" id="set-hints">${has('hintsOff') ? '开启' : '关闭'}</button>（卡住时可看笔记里的提示）</p>
+          <p>字号：<button class="btn red" id="set-large">${has('largeText') ? '标准' : '大字号'}</button></p>`;
+        body.appendChild(div);
+        body.querySelector('#set-hints').onclick = toggleHints;
+        body.querySelector('#set-large').onclick = toggleLarge;
+      }
+    }
+  }
+};
+
+(function injectMeta() {
+  try {
+    const head = document.head || document.getElementsByTagName('head')[0];
+    if (!head) return;
+    const icon = document.createElement('link');
+    icon.rel = 'icon';
+    icon.href = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌧</text></svg>');
+    head.appendChild(icon);
+    const meta = (n, c) => { const m = document.createElement('meta'); m.name = n; m.content = c; head.appendChild(m); };
+    meta('description', '《失踪的拾光者》——网页解密恐怖游戏：22 个网站、36 条线索、4 个结局。');
+    const og = (p, c) => { const m = document.createElement('meta'); m.setAttribute('property', p); m.content = c; head.appendChild(m); };
+    og('og:title', '失踪的拾光者');
+    og('og:description', '一封匿名邮件，一个消失的博主，一场十八年前的雨。');
+    og('og:type', 'website');
+  } catch (e) {}
+})();
+
+/* ============ v3 汇总：最终 runAction / 任务日志 / 页面覆盖 ============ */
+function runAction(el) {
+  const act = el.getAttribute('data-action');
+  if (act === 'search') {
+    const ae = document.activeElement;
+    if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;
+    submitSearch(el);
+    return;
+  }
+  if (act === 'forum-post') { forumPost(); return; }
+  if (act === 'chat-send') { chatSend(); return; }
+  if (act === 'reply-aqing') { replyAqing(); return; }
+  if (act === 'aqing-reply-send') { aqingReplySend(); return; }
+  if (act === 'dark-send') { darkSend(); return; }
+  if (act === 'zoom-film') { zoomFilm(el.getAttribute('data-film')); return; }
+  if (act === 'maildraft-login') { maildraftLogin(); return; }
+  if (act === 'zoom-photo') { zoomPhoto(el.getAttribute('data-photo')); return; }
+  if (act === 'zoom-avatar') { zoomAvatar(); return; }
+  if (act === 'archive-login') { archiveLogin(); return; }
+  if (act === 'cloud-login') { cloudLogin(); return; }
+  if (act === 'play-ghost-audio') { playGhostAudio(); toast('雨声……脚步声……还有别的东西。'); return; }
+}
+function forumPost() {
+  const inp = $('forum-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) { const e = $('forum-err'); if (e) e.textContent = '写点什么再发。'; return; }
+  flag('forumPosted', v);
+  toast('已发布。');
+  renderPage();
+  setTimeout(() => {
+    if (!has('forumReplied')) {
+      flag('forumReplied');
+      addNotification('观雨者', '你也来了，' + nameOf() + '。', () => openApp('browser'));
+    }
+  }, 4000);
+}
+function chatSend() {
+  const inp = $('chat-input');
+  const v = (inp && inp.value.trim()) || '';
+  if (!v) return;
+  flag('chatSent', v);
+  if (!has('chatReplied')) {
+    flag('chatReplied');
+    addNotification('客', '有人在看。', () => openApp('browser'));
+  }
+  toast('已发送。');
+  renderPage();
+}
+
+document.addEventListener('click', e => {
+  const h = e.target.closest('[data-hint]');
+  if (h) { hintNext(h.getAttribute('data-hint')); return; }
+  const cb = e.target.closest('[data-combo]');
+  if (cb) { comboDo(cb.getAttribute('data-combo')); return; }
+  const c1 = e.target.closest('[data-c1]');
+  if (c1) { choose1(c1.getAttribute('data-c1')); renderJournal(); return; }
+  const c2 = e.target.closest('[data-c2]');
+  if (c2) { choose2(c2.getAttribute('data-c2')); renderJournal(); return; }
+});
+
+(function injectV3Tabs() {
+  const tabs = $('journal-tabs');
+  if (!tabs) return;
+  const add = (id, label) => {
+    if (!tabs.querySelector('[data-jtab="' + id + '"]')) {
+      const b = document.createElement('button');
+      b.className = 'jtab';
+      b.setAttribute('data-jtab', id);
+      b.textContent = label;
+      tabs.appendChild(b);
+    }
+  };
+  add('reason', '推理');
+  add('hint', '提示');
+  add('dark', '暗线');
+})();
+
+function renderJournalV2() {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.toggle('active', b.getAttribute('data-jtab') === journalTab));
+  const body = $('journal-body');
+  const typeName = { key: '<span class="clue-mark key">关键</span>', mislead: '<span class="clue-mark mislead">存疑</span>', super: '<span class="clue-mark super">异常</span>', story: '<span class="clue-mark story">剧情</span>' };
+  const typeLabel = { key: '关键线索', mislead: '可能为误导', super: '异常线索', story: '剧情线索' };
+  if (journalTab === 'chapters') {
+    body.innerHTML = CHAPTERS.map(c => {
+      const on = save.chaptersSeen.includes(c.id);
+      return `<div class="jclue"><div class="jt">${esc(c.title)} <span class="clue-mark ${on ? 'done' : 'story'}">${on ? '已解锁' : '未解锁'}</span></div><div class="jd">${esc(c.line)}</div><div>${esc(c.text)}</div></div>`;
+    }).join('');
+  } else if (journalTab === 'clues') {
+    const chOrder = CHAPTERS.map(c => c.id);
+    const byCh = {};
+    for (const id of Object.keys(CLUES)) {
+      if (!isDiscovered(id)) continue;
+      const ch = CLUES[id].ch || 'c0';
+      (byCh[ch] = byCh[ch] || []).push(id);
+    }
+    let html = '';
+    for (const ch of chOrder) {
+      if (!byCh[ch]) continue;
+      const cmeta = CHAPTERS.find(c => c.id === ch);
+      html += `<div style="margin:16px 0 8px;color:#b0833a;font-size:13px;letter-spacing:.08em">${esc(cmeta ? cmeta.title : ch)}</div>`;
+      for (const id of byCh[ch]) {
+        const c = CLUES[id];
+        const on = isMarked(id);
+        html += `<div class="jclue"><div class="jt">${esc(c.title)} ${typeName[c.type] || ''}</div><div class="jd">${esc(c.date)} · ${esc(typeLabel[c.type] || '')}</div><div>${esc(c.text)}</div><div style="margin-top:8px"><button class="mark-btn ${on ? 'on' : ''}" data-mark="${id}">${on ? '已标记为误导 ✓' : '标记为误导'}</button></div></div>`;
+      }
+    }
+    body.innerHTML = html || '<div class="muted-note" style="line-height:2">还没有发现线索。</div>';
+  } else if (journalTab === 'reason') {
+    body.innerHTML = COMBO_ORDER.map(id => {
+      const c = COMBOS[id];
+      const done = has(c.flag);
+      const need = c.need.map(x => `<span class="${isDiscovered(x) ? 'ok' : ''}">${esc(CLUES[x].title)}</span>`).join(' · ');
+      return `<div class="combo-card"><div class="ct">${esc(c.name)} ${done ? '<span class="clue-mark done">已合成</span>' : ''}</div><div class="need">需要：${need}</div><div>${esc(c.text)}</div><button class="combo-btn ${done ? 'done' : ''}" data-combo="${id}" ${done || !c.need.every(isDiscovered) ? 'disabled' : ''}>${done ? '已合成' : '合 成'}</button></div>`;
+    }).join('') + '<div class="muted-note" style="margin-top:10px">把相关的证据拼在一起，也许能看见更多。</div>';
+  } else if (journalTab === 'hint') {
+    body.innerHTML = Object.keys(HINTS).map(id => {
+      const h = HINTS[id];
+      return `<div class="hint-card"><div class="ht">${esc(h.title)}</div><div class="hb">${esc(hintText(id))}</div><button class="hint-btn" data-hint="${id}">下一条提示</button></div>`;
+    }).join('') + '<div class="muted-note" style="margin-top:10px">提示可在设置中关闭。</div>';
+  } else if (journalTab === 'dark') {
+    const lines = DARK_LINES.filter(l => l.stage()).map(l => `<div class="dark-msg"><span class="who">观雨者</span> ${esc(l.text.replace('{name}', nameOf()))}</div>`).join('');
+    const sent = (save.darkSent || []).map(m => `<div class="dark-msg" style="text-align:right"><span class="me-w">你</span> ${esc(m)}</div>`).join('');
+    body.innerHTML = `<div class="dark-chat">${lines}${sent}<div class="dark-in"><input id="dark-input" placeholder="说点什么……" autocomplete="off"><button data-action="dark-send">发 送</button></div></div>`;
+  } else if (journalTab === 'people') {
+    const list = Object.keys(PEOPLE).filter(k => PEOPLE[k].unlock.some(isDiscovered));
+    let html = list.length ? list.map(k => {
+      const p = PEOPLE[k];
+      return `<div class="jperson"><div class="pn">${esc(p.name)}</div><div class="pd">${esc(p.desc)}</div></div>`;
+    }).join('') : '<div class="muted-note" style="line-height:2">还没有足够的信息拼出人物关系。</div>';
+    const qs = Object.keys(QUESTS).filter(k => QUESTS[k].start()).map(k => {
+      const q = QUESTS[k];
+      const done = q.done();
+      return `<div class="quest-line ${done ? 'done' : ''}">支线 · ${esc(q.name)}：${done ? '已完成' : '进行中'}</div>`;
+    }).join('');
+    body.innerHTML = html + (qs ? '<div style="margin-top:12px;border-top:1px solid #38332b;padding-top:10px">' + qs + '</div>' : '');
+  } else if (journalTab === 'timeline') {
+    const rows = save.discovered.map(id => CLUES[id]).filter(Boolean)
+      .sort((a, b) => (a.date === '未知' ? '9999' : a.date).localeCompare(b.date === '未知' ? '9999' : b.date));
+    body.innerHTML = rows.length ? rows.map(c => `<div class="jtime"><span class="dt">${esc(c.date)}</span><span>${esc(c.title)}</span></div>`).join('')
+      : '<div class="muted-note" style="line-height:2">时间线会随着线索的发现自动整理。</div>';
+  } else if (journalTab === 'final') {
+    const s = endingStats();
+    const rain = canRain();
+    const supTotal = Object.keys(CLUES).filter(id => CLUES[id].type === 'super').length;
+    let choices = '';
+    if (!has('choice1') && has('choice1_offered')) choices += `<div class="choice-pending"><div class="cp">你发现了一些东西——要不要告诉阿青？</div><button data-c1="tell">告诉阿青</button><button data-c1="secret">先保密</button></div>`;
+    if (!has('choice2') && has('choice2_offered')) choices += `<div class="choice-pending"><div class="cp">雨巷在等你回应。</div><button data-c2="reply">回应雨巷</button><button data-c2="silent">保持沉默</button></div>`;
+    let history = '';
+    if (has('choice1')) history += `<div class="choice-done">抉择一：${save.flags.choice1 === 'tell' ? '你告诉了阿青' : '你选择了保密'}</div>`;
+    if (has('choice2')) history += `<div class="choice-done">抉择二：${save.flags.choice2 === 'reply' ? '你回应了雨巷' : '你保持沉默'}</div>`;
+    if (!has('finalUnlocked')) {
+      body.innerHTML = `<div class="jfinal"><div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 已标记误导 ${s.mRight}/4</div>${choices}${history}
+        <div class="muted-note" style="line-height:2;margin-top:12px">先读完林晚写给你的那封信（邮箱收件箱），再来做最终抉择。</div></div>`;
+    } else {
+      body.innerHTML = `<div class="jfinal">
+        <div class="big">关键线索 ${s.key}/5 · 异常线索 ${s.sup}/${supTotal} · 已标记误导 ${s.mRight}/4</div>${choices}${history}
+        <div class="muted-note" style="line-height:1.8;margin:10px 0">结局取决于你掌握的线索与最终的选择。</div>
+        <button data-end="publish">公开全部证据</button>
+        <button data-end="destroy">销毁证据，让一切沉默</button>
+        <button data-end="rain" ${rain ? '' : 'disabled'}>走进雨巷${rain ? '' : '（条件不足）'}</button>
+      </div>`;
+    }
+  }
+}
+
+function showEndingV3(k) {
+  save.ending = k;
+  persist();
+  closeJournal();
+  hideLightbox();
+  enableGlitch(false);
+  const e = ENDINGS[k];
+  let extra = '';
+  if (k === 'A') {
+    if (save.flags.choice1 === 'tell') extra += '\n\n（阿青后来告诉我：林晚说，她把证据托付给了一个会替她看雨的人。）';
+    if (has('comboA')) extra += '\n\n（账目上那 160 万的缺口，终于有了去处。）';
+  } else if (k === 'B') {
+    if (save.flags.choice2 === 'silent') extra += '\n\n（你选择沉默。雨巷里，没有人再说话。）';
+    if (has('comboB')) extra += '\n\n（访客日志翻到最后一页：空。）';
+  } else if (k === 'D') {
+    if (save.flags.choice1 === 'secret') extra += '\n\n（你早就知道：有些话，只能对雨说。）';
+    if (save.flags.choice2 === 'reply') extra += '\n\n（你回应了。访客日志里，从此多了你的名字。）';
+  }
+  $('ending').innerHTML = `<div class="ending-card"><h2>${esc(e.title)}</h2>${esc(e.body + extra)}<div><span class="tag">${esc(e.tag)}</span></div><button id="ending-restart">重新开始</button></div>`;
+  $('ending').classList.remove('hidden');
+  $('ending-restart').onclick = () => { localStorage.removeItem(SAVE_KEY); location.reload(); };
+}
+setTimeout(() => { showEnding = showEndingV3; }, 0);
+
+/* ===== v3 页面最终覆盖 ===== */
+SITES['blog.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-blog">
+    <div class="blog-head"><div class="bt">拾 光${has('react_r_dark') ? ' · 雨没有停' : ''}</div><div class="muted-note" style="margin-top:6px">blog.linwan.cn · 林晚</div></div>
+    <div class="blog-list">
+      ${has('react_r_k2') ? `<div class="bpost" style="border-left:3px solid #8b0f0f"><a data-nav="blog.linwan.cn/post/20080312"><div class="t">2008 年 3 月 12 日</div></a><div class="d">2026-06-21 · 新发布</div></div>` : ''}
+      ${has('comboA') ? `<div class="bpost" style="border-left:3px solid #b0833a"><a data-nav="blog.linwan.cn/post/account"><div class="t">账</div></a><div class="d">2026-06-21 · 整理稿</div></div>` : ''}
+      <div class="bpost"><a data-nav="blog.linwan.cn/post/sucheng"><div class="t">苏承老师</div></a><div class="d">2026-06-01 · 阅读 1.2 万</div></div>
+      <div class="bpost"><div class="t">回到雾山</div><div class="d">2026-05-20 · 阅读 8.4 千</div><div class="muted-note">十八年了。雾山的路还是老样子，只是认识的人都不在了。</div></div>
+      <div class="bpost"><a data-nav="blog.linwan.cn/drafts"><div class="t">草稿箱 <span class="draft-tag">（3 篇未发布）</span></div></a></div>
+    </div>
+  </div>`;
+
+SITES['mail.wushan.cn'].pages['/inbox'].html = () => {
+  const thanks = has('draftsRead');
+  const aqing = has('react_r_aqing');
+  const aqingReply = has('aqingReplied');
+  const zhoufang = isDiscovered('t1') && !has('quest_zhoufang_done');
+  return `
+    <div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side">
+          <div class="on">收件箱</div>
+          <div>已发送</div>
+          <div data-nav="mail.wushan.cn/drafts" style="cursor:pointer">草稿箱</div>
+          <div>垃圾邮件</div>
+        </div>
+        <div class="mail-list">
+          ${aqingReply ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/aqing-reply">
+            <span class="mdate">06-21 12:40</span><b>● </b>${esc('aqing@wushanmail.cn')}
+            <div class="msub">回信</div>
+          </div>` : ''}
+          ${zhoufang ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/zhoufang">
+            <span class="mdate">06-21 14:02</span><b>● </b>${esc('zhoufang@wushanwanbao.cn')}
+            <div class="msub">关于苏承案</div>
+          </div>` : ''}
+          ${aqing ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/aqing">
+            <span class="mdate">06-21 08:12</span>
+            <b>${has('aqingRead') ? '' : '● '}</b>${esc('aqing@wushanmail.cn')}
+            <div class="msub">给小雨</div>
+          </div>` : ''}
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/help">
+            <span class="mdate">06-20 02:13</span>
+            <b>${has('emailReadHelp') ? '' : '● '}</b>${esc('linwan@wushanmail.cn')}
+            <div class="msub">请帮我</div>
+          </div>
+          ${thanks ? `
+          <div class="mail-row" data-nav="mail.wushan.cn/mail/thanks">
+            <span class="mdate">06-20 02:31</span>
+            <b>${has('emailReadThanks') ? '' : '● '}</b>${esc('linwan@wushanmail.cn')}
+            <div class="msub">谢谢你</div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>`;
+};
+
+SITES['chat.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-chat" style="max-width:760px">
+    <div class="chat-head">雾山老友群（7）</div>
+    <div class="chat-body">
+      <div class="msg other"><div class="who">阿青</div>林晚你回雾山了？怎么也不说一声。<span class="when">06-10 20:14</span></div>
+      <div class="msg me"><div class="who">林晚</div>回来办点事。别跟我爸说。<span class="when">06-10 20:16</span></div>
+      <div class="msg other"><div class="who">老周</div>听说你借了孙总不少钱？行啊你。<span class="when">06-12 22:01</span></div>
+      <div class="msg me"><div class="who">林晚</div>那是生意上的事。<span class="when">06-12 22:03</span></div>
+      <div class="msg other"><div class="who">阿青</div>你最近老往旧学校跑，没事吧？<span class="when">06-14 23:38</span></div>
+      <div class="msg me"><div class="who">林晚</div>我把东西传到拾光云了。晚上别出门。<span class="when">06-14 23:40</span></div>
+      <div style="text-align:center;color:#6b7580;font-size:12px;margin-bottom:10px">老周撤回了一条消息 · 06-14 23:45</div>
+      <div class="msg me"><div class="who">林晚</div>晚安。如果明天我回不了消息，就去看看我的博客。<span class="when">06-14 23:47</span></div>
+      <div class="msg me" style="background:#2f3a2c"><div class="who">林晚</div>（该消息已删除）<span class="when">06-15 01:13</span></div>
+      <div class="msg other"><div class="who">老周</div>人不见了，八成是躲债跑了。<span class="when">06-15 10:02</span></div>
+      <div class="msg other"><div class="who">阿青</div>老周你闭嘴！她不是那样的人。<span class="when">06-15 10:05</span></div>
+      <div class="msg other"><div class="who">阿青</div>（私聊备注）她云盘密码还是大学那个，用她爸名字起的。谁也别动。<span class="when">06-16 00:31</span></div>
+    </div>
+    ${has('aqingRead') ? `<div style="text-align:center;margin:6px 0 16px"><a data-nav="chat.linwan.cn/aqing">和阿青私聊 →</a></div>` : ''}
+  </div>`;
+
+SITES['newspaper.wushan.cn'].pages['/2008-03-16-draft'].html = () => `
+  <div class="page site-news article">
+    <div class="news-head">旧报扫描库 · 原稿（未刊发）</div>
+    <h1>教师之死疑点重重</h1>
+    <div class="meta">2008-03-16 · 周方 · 标注：编辑未通过</div>
+    <p>本报讯　据不愿透露姓名的警方消息人士称，死者苏承生前曾向同事表示自己「被人威胁」，事发前一日曾到学校财务室核对账目。</p>
+    <p>现场勘查记录显示，宿舍门锁完好，但临窗的桌上有半杯未喝完的茶——按同事的说法，苏承从不喝茶。</p>
+    <p>（原稿到此为止，未见报。）</p>
+    <div class="hint-line"><a data-nav="wanbao.wushan.cn/column-zhoufang">周方专栏 →</a></div>
+  </div>`;
+
+SITES['guanyuzhe2007.net'].pages['/'].html = () => `
+  <div class="page site-gblog">
+    <div class="dark-page" style="text-align:left">
+      <div class="red" style="text-align:center">雨巷 · 2007</div>
+      <div class="dim" style="margin-top:30px">2007-06-13　《雾山的雨》</div>
+      <div class="red" style="margin-top:8px">雾山的雨一下就是半个月。校门口的梧桐树，小雨总在那等爸爸。</div>
+      <div class="dim" style="margin-top:30px">2007-08-02　《有人来了》</div>
+      <div class="red" style="margin-top:8px">有人来了。我不确定他看见我没有。</div>
+      <div class="dim" style="margin-top:30px">2008-03-13　《他走了》</div>
+      <div class="red" style="margin-top:8px">他走了。雨停之前，不要抬头。我答应过他。</div>
+      ${isDiscovered('s8') ? `
+      <div class="dim" style="margin-top:30px">2008-03-14　《小雨》</div>
+      <div class="red" style="margin-top:8px">她接走了小雨。校门口，梧桐树还在。<br>她问我：叔叔，雨什么时候停。<br>我没能回答。</div>` : ''}
+      <div class="dim" style="margin-top:40px"><a data-nav="mirror.yuxiang2026.net/">旧版雨巷镜像 →</a></div>
+    </div>
+  </div>`;
+
+SITES['alumni.wushan.cn'].pages['/photo-1996'].html = () => `
+  <div class="page site-alumni">
+    <div class="alumni-card">
+      <b>雾山中学 · 1996 年教师合影（扫描件）</b><br><br>
+      名单（局部）：后排左三 苏承；后排左四 林守正（校工）。<br><br>
+      备注：2008 年，苏小雨由林守正一家收养。<br>
+      <div class="muted-note" style="margin-top:10px">照片右下角有一行小字：<b>「雨。」</b></div>
+    </div>
+    ${has('comboB') ? `
+    <div class="alumni-card" style="margin-top:12px">
+      <b>（批注）</b><br>
+      1996 年的合影、2007 年的博客、每年 3 月 12 日的访客——<br>
+      观雨者的名字，也许一直写在照片里：守雨的人，一直都在。
+    </div>` : ''}
+  </div>`;
+
+SITES['bbs.wushan.cn'].pages['/t/13581'].html = () => `
+  <div class="page site-forum">
+    <div class="forum-top"><span>雾山论坛 · 寻人区</span></div>
+    <div class="forum-board">
+      <div class="post"><span class="floor">楼主</span><span class="pu">雾山小灵通</span> <span class="pt">2026-06-15 08:01</span><div class="body">林晚，你在哪？6 月 14 日之后就没消息了。有知道的吗？</div></div>
+      <div class="post"><span class="pu">老周</span> <span class="pt">2026-06-15 08:22</span><div class="body">听说她欠了外面不少钱，跑了呗。别找了。</div></div>
+      <div class="post"><span class="pu">阿青</span> <span class="pt">2026-06-15 09:03</span><div class="body">老周你别瞎说，她不是那种人。</div></div>
+      <div class="post"><span class="floor">—</span><span class="pt">2026-06-16 03:44</span><div class="body" style="color:#9aa;font-style:italic">该楼层已被删除。<br><span style="font-size:12px">（版主备注：内容与寻人无关，已处理）</span></div></div>
+      ${has('forumPosted') ? `<div class="post"><span class="floor">你</span><span class="pu">${esc(nameOf())}</span> <span class="pt">刚刚</span><div class="body">${esc(save.flags.forumPosted)}</div></div>` : ''}
+      ${has('forumReplied') ? `<div class="post"><span class="pu">观雨者</span> <span class="pt">刚刚</span><div class="body">你也来了，${esc(nameOf())}。</div></div>` : ''}
+      <div class="post"><span class="pu">观雨者</span> <span class="pt">2026-06-17 01:11</span><div class="body">你也在看雨吗。</div></div>
+    </div>
+    <div class="post" style="border-top:2px solid #e6ebef;background:#f7f9fb">
+      <textarea id="forum-input" class="forum-input" rows="2" placeholder="说点什么……"></textarea>
+      <div class="login-err" id="forum-err"></div>
+      <button class="btn red" data-action="forum-post" style="margin-top:8px">发 帖</button>
+    </div>
+    <div class="hint-line">账号在线记录：林晚 · 最后活跃 2026-06-19 02:11<br>林晚 · 发帖数 0 · 回复数 3</div>
+  </div>`;
+
+SITES['den.wuyu.net'].pages['/'].html = () => `
+  <div class="page site-den">
+    <div class="cloud-head">雨巷的客人 · 加密日志（节选）</div>
+    <div style="padding:16px 0">
+      <div class="den-msg"><span class="u">赵</span>：林晚查到了账目。</div>
+      <div class="den-msg"><span class="u">孙</span>：按老规矩办。</div>
+      <div class="den-msg"><span class="u">钱</span>：观雨者是我们的人，盯住她就行。</div>
+      <div class="den-msg"><span class="me">客</span>：她在看。</div>
+      ${has('chatSent') ? `<div class="den-msg" style="text-align:right"><span class="me">${esc(nameOf())}</span>：${esc(save.flags.chatSent)}</div>` : ''}
+      ${has('chatReplied') ? `<div class="den-msg"><span class="me">客</span>：有人在看。</div>` : ''}
+      <div class="den-msg"><span class="u">赵</span>：2007 年的雨巷，去那看看她写了什么：guanyuzhe2007.net</div>
+      <div class="den-msg" style="border-top:1px solid #262b34">
+        <textarea id="chat-input" class="dark-input" rows="2" placeholder="输入点什么……"></textarea>
+        <button class="btn red" data-action="chat-send" style="margin-top:8px">发 送</button>
+      </div>
+    </div>
+  </div>`;
+
+SITES['mail.wushan.cn'].pages['/mail/aqing'].html = () => `
+  <div class="page site-mail">
+    <div class="mail-layout">
+      <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">已打开</div></div>
+      <div class="mail-body">
+        发件人：aqing@wushanmail.cn<br>
+        收件人：你<br>
+        主题：给小雨<br>
+        时间：2026-06-21 08:12<br><br>
+        你好。我是阿青，林晚的朋友。<br>
+        她失踪前把一封定时邮件给了我，让我「等到有人开始查这件事」就转寄出来。<br>
+        林晚，或者该叫她小雨——她这辈子只求过我一件事：<br>
+        如果她不见了，请让真相自己走出去。<br>
+        老照片在她旧学校的校友录里。去看一眼吧。
+      </div>
+    </div>
+    ${!has('aqingReplied') ? `
+    <div style="border-top:1px solid #e0e5ea;padding:16px 26px">
+      <b>回复阿青</b>
+      ${has('aqingReplying') ? `<textarea id="aqing-reply-input" class="forum-input" rows="3" placeholder="写点什么……"></textarea><div class="login-err" id="aqing-reply-err"></div><button class="btn red" data-action="aqing-reply-send" style="margin-top:8px">发 送</button>` : `<button class="btn red" data-action="reply-aqing">回 信</button>`}
+    </div>` : '<div style="padding:14px 26px;color:#777">你已回复阿青。</div>'}
+  </div>`;
+
+SITES['police.wushan.cn'].pages['/login'].html = () => `
+  <div class="page site-archive">
+    ${has('wrong_archive_3') ? '<div class="del-banner">⚠ 访问记录已上传。</div>' : ''}
+    <div class="archive-head">雾山县公安局 · 案件档案查询系统</div>
+    <div class="login-box">
+      <h3>档案查询</h3>
+      <div class="muted-note" style="margin-top:8px">请输入案卷相关信息（数字密码）</div>
+      <input id="pwd-input" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="pwd-err"></div>
+      <button class="btn red" data-action="archive-login">查 询</button>
+      <div class="hint-line" style="text-align:left;margin-top:14px">提示：档案只接受数字。旧博客《苏承老师》里，藏着打开它的钥匙。</div>
+    </div>
+  </div>`;
+
+SITES['cloud.linwan.cn'].pages['/login'].html = () => `
+  <div class="page site-cloud">
+    ${has('wrong_cloud_3') ? '<div class="del-banner">⚠ 访问记录已上传。</div>' : ''}
+    <div class="cloud-head">拾光云 · 林晚的私人云盘</div>
+    <div class="login-box">
+      <h3>请输入访问密码</h3>
+      <input id="cloud-pwd" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="cloud-err"></div>
+      <button class="btn red" data-action="cloud-login">进 入</button>
+      <div class="hint-line" style="text-align:left;margin-top:14px">提示：老友群里，阿青提过这个密码的来历。</div>
+    </div>
+  </div>`;
+
+/* ===== 补丁：定义 showBoot（09y 引用它），confirmName 统一走开机流程 ===== */
+function showBoot() {
+  const b = $('boot');
+  if (b) b.classList.add('show');
+  setTimeout(() => { if (b) b.classList.remove('show'); enterDesktop(); }, 2000);
+}
+function confirmName() {
+  const inp = $('name-input');
+  const v = (inp && inp.value.trim()) || '匿名网友';
+  flag('playerName', v);
+  flag('nameSet');
+  $('name-screen').classList.remove('show');
+  showBoot();
+}
 
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {

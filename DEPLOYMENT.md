@@ -80,3 +80,9 @@ npx --yes vercel@latest deploy . --token <TOKEN> --yes --prod --name mystery-gam
 - 测试：
 ode .build-parts\test-harness6.js .build-parts\mystery_check.js（28 项全过）
 - 待办：Vercel 更新需用户临时提供 token（或先在 Vercel 后台连接 GitHub）；GitHub Pages 推 main 自动更新
+
+## v3 深化改版（2026-08-05）
+- 已完成：双向互动（论坛发帖/聊天室输入/回信/暗线会话）、2 个中间抉择点、三级提示系统、证据组合（3 组）、误导惩罚、桌面细节（右键菜单/开始菜单/图标拖拽/引导便签/开机音/通知音）、三人物支线、任务栏性能优化、大字号、favicon/meta
+- 线索：29 → 36；结局判定与关键线索不变
+- 测试：
+ode .build-parts\test-harness7.js .build-parts\mystery_check.js（19 项全过）
