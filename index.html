@@ -3694,6 +3694,52 @@ SITES['police.wushan.cn'].pages['/login'].html = () => `
     </div>
   </div>`;
 
+/* ===== 补丁：论坛与老友群加入「已删除/撤回」信息（氛围细节） ===== */
+SITES['bbs.wushan.cn'].pages['/t/13581'].html = () => `
+  <div class="page site-forum">
+    <div class="forum-top"><span>雾山论坛 · 寻人区</span></div>
+    <div class="forum-board">
+      <div class="post"><span class="floor">楼主</span><span class="pu">雾山小灵通</span> <span class="pt">2026-06-15 08:01</span><div class="body">林晚，你在哪？6 月 14 日之后就没消息了。有知道的吗？</div></div>
+      <div class="post"><span class="pu">老周</span> <span class="pt">2026-06-15 08:22</span><div class="body">听说她欠了外面不少钱，跑了呗。别找了。</div></div>
+      <div class="post"><span class="pu">阿青</span> <span class="pt">2026-06-15 09:03</span><div class="body">老周你别瞎说，她不是那种人。</div></div>
+      <div class="post"><span class="floor">—</span><span class="pt">2026-06-16 03:44</span><div class="body" style="color:#9aa;font-style:italic">该楼层已被删除。<br><span style="font-size:12px">（版主备注：内容与寻人无关，已处理）</span></div></div>
+      <div class="post"><span class="pu">观雨者</span> <span class="pt">2026-06-17 01:11</span><div class="body">你也在看雨吗。</div></div>
+    </div>
+    <div class="hint-line">账号在线记录：林晚 · 最后活跃 2026-06-19 02:11<br>林晚 · 发帖数 0 · 回复数 3</div>
+  </div>`;
+
+SITES['bbs.wushan.cn'].pages['/t/13580'].html = () => `
+  <div class="page site-forum">
+    <div class="forum-top"><span>雾山论坛 · 旧案区</span></div>
+    <div class="forum-board">
+      <div class="post"><span class="floor">楼主</span><span class="pu">雾山旧事</span> <span class="pt">2026-05-22 21:30</span><div class="body">2008 年雾山中学苏承案，还有人记得吗？官方说是自杀，但我总觉得不对劲。那年我才 12 岁，住在教师宿舍附近。</div></div>
+      <div class="post"><span class="pu">雾山老李</span> <span class="pt">2026-05-23 09:12</span><div class="body">我当年住隔壁村。那天晚上我看见苏老师一个人从校门走出来，还跟我打了个招呼，看着不像要寻死。后来就听说他死了。</div></div>
+      <div class="post"><span class="pu">匿名</span> <span class="pt">2026-05-25 01:47</span><div class="body">有些事别问了。为你自己好。</div></div>
+      <div class="post"><span class="pu">观雨者</span> <span class="pt">2008-03-12 22:05</span><div class="body">雨停之前，不要抬头。</div></div>
+      <div class="post"><span class="pu">（已删除）</span> <span class="pt">2008-03-13 01:02</span><div class="body" style="color:#9aa;font-style:italic">该回复已被删除。<br><span style="font-size:12px">2008 年 3 月 13 日凌晨发布，当日被删除。</span></div></div>
+    </div>
+    <div class="hint-line">用户信息：观雨者 · 注册于 2007-06-13 · 状态：在线<br>当日雾山天气记录：2008-03-12 · 多云 · 无雨</div>
+  </div>`;
+
+SITES['chat.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-chat" style="max-width:760px">
+    <div class="chat-head">雾山老友群（7）</div>
+    <div class="chat-body">
+      <div class="msg other"><div class="who">阿青</div>林晚你回雾山了？怎么也不说一声。<span class="when">06-10 20:14</span></div>
+      <div class="msg me"><div class="who">林晚</div>回来办点事。别跟我爸说。<span class="when">06-10 20:16</span></div>
+      <div class="msg other"><div class="who">老周</div>听说你借了孙总不少钱？行啊你。<span class="when">06-12 22:01</span></div>
+      <div class="msg me"><div class="who">林晚</div>那是生意上的事。<span class="when">06-12 22:03</span></div>
+      <div class="msg other"><div class="who">阿青</div>你最近老往旧学校跑，没事吧？<span class="when">06-14 23:38</span></div>
+      <div class="msg me"><div class="who">林晚</div>我把东西传到拾光云了。晚上别出门。<span class="when">06-14 23:40</span></div>
+      <div style="text-align:center;color:#6b7580;font-size:12px;margin-bottom:10px">老周撤回了一条消息 · 06-14 23:45</div>
+      <div class="msg me"><div class="who">林晚</div>晚安。如果明天我回不了消息，就去看看我的博客。<span class="when">06-14 23:47</span></div>
+      <div class="msg me" style="background:#2f3a2c"><div class="who">林晚</div>（该消息已删除）<span class="when">06-15 01:13</span></div>
+      <div class="msg other"><div class="who">老周</div>人不见了，八成是躲债跑了。<span class="when">06-15 10:02</span></div>
+      <div class="msg other"><div class="who">阿青</div>老周你闭嘴！她不是那样的人。<span class="when">06-15 10:05</span></div>
+      <div class="msg other"><div class="who">阿青</div>（私聊备注）她云盘密码还是大学那个，用她爸名字起的。谁也别动。<span class="when">06-16 00:31</span></div>
+    </div>
+  </div>`;
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
