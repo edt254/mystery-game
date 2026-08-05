@@ -3556,6 +3556,130 @@ Object.assign(SEARCH, {
   '通话': [{ t: '通话详单查询', u: 'records.wushan.cn/', d: '雾山移动客户详单查询。' }]
 });
 
+/* ===== 补丁：密码提示去直白化（改为交叉推导，不直接写出密码） ===== */
+function renderUrlInto(el, url, isBrowser) {
+  if (!el) return;
+  const { host, path } = normalize(url);
+  const cleanPath = path.split('?')[0] || '/';
+  const q = path.includes('?') ? path.slice(path.indexOf('?') + 1) : '';
+  const site = SITES[host];
+  const page = site && site.pages[cleanPath] ? site.pages[cleanPath] : null;
+  if (isBrowser && activeTab) {
+    activeTab.title = page ? page.title : (site ? '页面不存在' : '无法访问');
+    $('addr').value = 'https://' + url;
+  }
+  let denied = null;
+  if (host === 'mail.wushan.cn' && cleanPath === '/drafts' && !has('mailDraftsOpen')) {
+    el.innerHTML = `<div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">草稿箱</div></div>
+        <div class="mail-body" style="text-align:center">
+          <h3 style="margin:18px 0 6px">草稿箱已加密</h3>
+          <div class="muted-note">林晚设置了访问密码。</div>
+          <input id="maildraft-pwd" type="password" placeholder="密码" autocomplete="off" style="padding:10px;width:230px;font-size:15px;margin:12px 0 0">
+          <div class="login-err" id="maildraft-err"></div>
+          <button class="btn red" data-action="maildraft-login">解 锁</button>
+          <div class="hint-line" style="text-align:left;margin-top:14px">提示：她说密码还是老样子——《身份》草稿里写过。</div>
+        </div>
+      </div>
+    </div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (host === '2008.wushan.cn' && cleanPath === '/confidential/20080312' && !isDiscovered('k2')) denied = '该页面需要案卷权限。先找到第二份笔录。';
+  if (host === 'cloud.linwan.cn' && (cleanPath === '/files' || cleanPath.startsWith('/file/')) && !has('cloudOpen')) denied = '需要访问密码。';
+  if (host === 'police.wushan.cn' && cleanPath.startsWith('/case/') && !has('archiveOpen')) denied = '需要档案查询权限。';
+  if (host === 'mail.wushan.cn' && cleanPath === '/mail/thanks' && !has('draftsRead')) denied = '这封邮件还不存在。';
+  if (host === 'den.wuyu.net' && !has('darkUnlocked')) denied = '加密日志需要暗网入口。先找到雨巷。';
+  if (host === 'mirror.yuxiang2026.net' && !has('darkUnlocked')) denied = '旧版镜像需要暗网入口。';
+  if (denied) {
+    el.innerHTML = `<div class="site-404"><div style="font-size:44px">403</div><div>${esc(denied)}</div><div class="muted-note" style="margin-top:16px">你正在接近一个不存在的页面。</div></div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (page) {
+    el.innerHTML = page.html ? page.html({ q }) : '';
+    if (page.mount) page.mount(el);
+    const onl = el.querySelector('[data-rand-online]');
+    if (onl) onl.textContent = '在线：' + (14 + Math.floor(Math.random() * 18)) + ' 人';
+  } else {
+    el.innerHTML = render404(host, cleanPath);
+  }
+  finishRender(el, host);
+}
+
+SITES['blog.linwan.cn'].pages['/drafts'].html = () => `
+  <div class="page site-blog">
+    <div class="blog-head"><div class="bt">拾 光 · 草稿箱</div></div>
+    <div class="paper">
+      <h3>《身份》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-05 03:12</div>
+      <p style="margin-top:10px">我原名苏小雨。2008 年之后，我改了名字，换了城市，换了人生。</p>
+      <p>我一直在想，那间宿舍里到底发生了什么。</p>
+      <p>我要把自己藏起来，把证据交出去。邮箱密码还是老样子——去掉姓，小写拼音。</p>
+      <p class="conf">如果看到这句话，说明他也在看你。别关灯。</p>
+    </div>
+    <div class="paper" style="margin-top:14px">
+      <h3>《证据》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-12 23:58</div>
+      <p style="margin-top:10px">日记扫描件和录音都在拾光云里。密码是阿青给我起的绰号，从大学用到现在——我爸的名字，小写拼音。</p>
+      <p>如果我真的出了事，就把它们交给能看懂的人。</p>
+    </div>
+    <div class="paper" style="margin-top:14px">
+      <h3>《拍摄计划》<span class="draft-tag">草稿</span></h3>
+      <div class="muted-note">2026-06-13 00:20</div>
+      <p style="margin-top:10px">想拍一组雾山的老房子。老城区那几栋还在，雨天的光线最好。</p>
+    </div>
+  </div>`;
+
+SITES['mail.wushan.cn'].pages['/mail/thanks'].html = () => `
+  <div class="page site-mail">
+    <div class="mail-layout">
+      <div class="mail-side"><div>收件箱</div><div data-nav="mail.wushan.cn/drafts" style="cursor:pointer">草稿箱</div></div>
+      <div class="mail-body">
+        发件人：linwan@wushanmail.cn<br>
+        收件人：你<br>
+        主题：谢谢你<br>
+        时间：2026-06-20 02:31（草稿箱定时发送）<br><br>
+        你找到草稿了。<br>
+        我原名苏小雨。苏承是我父亲。<br>
+        2008 年 3 月 12 日，他死在生日那天。<br>
+        证据在拾光云，密码还是那个大学绰号。<br>
+        如果观雨者找到你——别关灯。<br><br>
+        等到雨停，就把真相发出去吧。
+      </div>
+    </div>
+  </div>`;
+
+SITES['chat.linwan.cn'].pages['/'].html = () => `
+  <div class="page site-chat" style="max-width:760px">
+    <div class="chat-head">雾山老友群（7）</div>
+    <div class="chat-body">
+      <div class="msg other"><div class="who">阿青</div>林晚你回雾山了？怎么也不说一声。<span class="when">06-10 20:14</span></div>
+      <div class="msg me"><div class="who">林晚</div>回来办点事。别跟我爸说。<span class="when">06-10 20:16</span></div>
+      <div class="msg other"><div class="who">老周</div>听说你借了孙总不少钱？行啊你。<span class="when">06-12 22:01</span></div>
+      <div class="msg me"><div class="who">林晚</div>那是生意上的事。<span class="when">06-12 22:03</span></div>
+      <div class="msg other"><div class="who">阿青</div>你最近老往旧学校跑，没事吧？<span class="when">06-14 23:38</span></div>
+      <div class="msg me"><div class="who">林晚</div>我把东西传到拾光云了。晚上别出门。<span class="when">06-14 23:40</span></div>
+      <div class="msg me"><div class="who">林晚</div>晚安。如果明天我回不了消息，就去看看我的博客。<span class="when">06-14 23:47</span></div>
+      <div class="msg other"><div class="who">老周</div>人不见了，八成是躲债跑了。<span class="when">06-15 10:02</span></div>
+      <div class="msg other"><div class="who">阿青</div>老周你闭嘴！她不是那样的人。<span class="when">06-15 10:05</span></div>
+      <div class="msg other"><div class="who">阿青</div>（私聊备注）她云盘密码还是大学那个，用她爸名字起的。谁也别动。<span class="when">06-16 00:31</span></div>
+    </div>
+  </div>`;
+
+SITES['cloud.linwan.cn'].pages['/login'].html = () => `
+  <div class="page site-cloud">
+    <div class="cloud-head">拾光云 · 林晚的私人云盘</div>
+    <div class="login-box">
+      <h3>请输入访问密码</h3>
+      <input id="cloud-pwd" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="cloud-err"></div>
+      <button class="btn red" data-action="cloud-login">进 入</button>
+      <div class="hint-line" style="text-align:left;margin-top:14px">提示：老友群里，阿青提过这个密码的来历。</div>
+    </div>
+  </div>`;
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
