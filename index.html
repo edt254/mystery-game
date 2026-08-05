@@ -3680,6 +3680,20 @@ SITES['cloud.linwan.cn'].pages['/login'].html = () => `
     </div>
   </div>`;
 
+/* ===== 补丁：档案密码提示去直白化（只指路，不报答案） ===== */
+SITES['police.wushan.cn'].pages['/login'].html = () => `
+  <div class="page site-archive">
+    <div class="archive-head">雾山县公安局 · 案件档案查询系统</div>
+    <div class="login-box">
+      <h3>档案查询</h3>
+      <div class="muted-note" style="margin-top:8px">请输入案卷相关信息（数字密码）</div>
+      <input id="pwd-input" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="pwd-err"></div>
+      <button class="btn red" data-action="archive-login">查 询</button>
+      <div class="hint-line" style="text-align:left;margin-top:14px">提示：档案只接受数字。旧博客《苏承老师》里，藏着打开它的钥匙。</div>
+    </div>
+  </div>`;
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
