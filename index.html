@@ -5616,6 +5616,223 @@ document.addEventListener('click', e => {
   }
 });
 
+/* ===== v5 修复：统一点击路由 / 任务栏置顶 / 笔记刷新 / 提示默认关闭 ===== */
+document.addEventListener('click', e => {
+  const win = e.target.closest('.app-win');
+  lastClickApp = win ? win.getAttribute('data-app') : 'browser';
+  const navEl = e.target.closest('[data-nav]');
+  if (navEl) { e.preventDefault(); e.stopImmediatePropagation(); navigate(navEl.getAttribute('data-nav')); return; }
+  const tabEl = e.target.closest('[data-tab]');
+  if (tabEl) { e.stopImmediatePropagation(); switchTab(Number(tabEl.getAttribute('data-tab'))); return; }
+  const closeEl = e.target.closest('[data-tabclose]');
+  if (closeEl) { e.stopImmediatePropagation(); closeTab(Number(closeEl.getAttribute('data-tabclose'))); return; }
+  const bar = e.target.closest('[data-bar]');
+  if (bar) {
+    e.stopImmediatePropagation();
+    const a = bar.getAttribute('data-bar');
+    if (a === 'back') goBack();
+    else if (a === 'fwd') goFwd();
+    else if (a === 'home') navigate(HOME_URL);
+    else if (a === 'source') openSource();
+    return;
+  }
+  const act = e.target.closest('[data-action]');
+  if (act) { e.preventDefault(); e.stopImmediatePropagation(); runAction(act); return; }
+  const lb = e.target.closest('[data-lb]');
+  if (lb) { e.stopImmediatePropagation(); hideLightbox(); return; }
+  const jtab = e.target.closest('.jtab');
+  if (jtab) { e.stopImmediatePropagation(); openJournal(jtab.getAttribute('data-jtab')); return; }
+  const mark = e.target.closest('[data-mark]');
+  if (mark) {
+    e.stopImmediatePropagation();
+    const id = mark.getAttribute('data-mark');
+    markMislead(id, !isMarked(id));
+    renderJournal();
+    return;
+  }
+  const endBtn = e.target.closest('[data-end]');
+  if (endBtn) {
+    e.stopImmediatePropagation();
+    if (!endBtn.disabled) showEnding(computeEnding(endBtn.getAttribute('data-end')));
+    return;
+  }
+});
+
+function updateTaskbar() {
+  const wrap = $('tb-apps');
+  if (!wrap) return;
+  let sig = '';
+  for (const app of Object.keys(winState)) {
+    const ws = winState[app];
+    if (!ws.ever) continue;
+    sig += app + ':' + (ws.open && !ws.minimized ? '1' : '0') + ';';
+    if (app === 'email') sig += emailUnread() + ';';
+    if (app === 'notes') sig += save.discovered.length + ';';
+  }
+  sig += '|' + (isDiscovered('s1') ? 'eye' : '');
+  if (sig === tbSig) return;
+  tbSig = sig;
+  wrap.innerHTML = '';
+  for (const app of Object.keys(winState)) {
+    const ws = winState[app];
+    if (!ws.ever) continue;
+    const b = document.createElement('button');
+    b.className = 'tb-app' + (ws.open && !ws.minimized ? ' active' : '');
+    b.setAttribute('data-app', app);
+    let badge = '';
+    if (app === 'email' && emailUnread() > 0) badge = `<span class="bdg">${emailUnread()}</span>`;
+    if (app === 'notes' && save.discovered.length > 0) badge = `<span class="bdg">${save.discovered.length}</span>`;
+    b.innerHTML = APPS[app].icon + ' ' + APPS[app].name + badge;
+    b.onclick = () => {
+      if (ws.open && !ws.minimized) focusApp(app);
+      else if (ws.open && ws.minimized) restoreApp(app);
+      else openApp(app);
+    };
+    wrap.appendChild(b);
+  }
+  const eye = $('tb-eye');
+  if (eye) eye.classList.toggle('hidden', !isDiscovered('s1'));
+}
+
+function discover(id, silent) {
+  if (isDiscovered(id)) return false;
+  const c = CLUES[id];
+  if (!c) return false;
+  save.discovered.push(id);
+  persist();
+  if (!silent) {
+    playDiscover();
+    toast('已记录新线索：「' + c.title + '」');
+  }
+  checkChapters();
+  checkReactions();
+  checkChoices();
+  if (winState.notes && winState.notes.open) renderJournal();
+  return true;
+}
+function flag(k, v) {
+  save.flags[k] = v === undefined ? true : v;
+  persist();
+  checkChapters();
+  checkReactions();
+  checkChoices();
+  if (winState.notes && winState.notes.open) renderJournal();
+}
+
+function toggleHints() {
+  flag('hintsOn', !has('hintsOn'));
+  toast(has('hintsOn') ? '提示已开启' : '提示已关闭', 1200);
+  renderJournal();
+}
+function hintText(id) {
+  const h = HINTS[id];
+  if (!h) return '';
+  if (!has('hintsOn')) return '提示已关闭（可在设置中开启）。';
+  const lv = save.hintLevel && save.hintLevel[id] !== undefined ? save.hintLevel[id] : 0;
+  return h.levels[lv];
+}
+
+function renderUrlInto(el, url, isBrowser) {
+  if (!el) return;
+  const { host, path } = normalize(url);
+  const cleanPath = path.split('?')[0] || '/';
+  const q = path.includes('?') ? path.slice(path.indexOf('?') + 1) : '';
+  const site = SITES[host];
+  const page = site && site.pages[cleanPath] ? site.pages[cleanPath] : null;
+  if (isBrowser && activeTab) {
+    activeTab.title = page ? page.title : (site ? '页面不存在' : '无法访问');
+    $('addr').value = 'https://' + url;
+  }
+  let denied = null;
+  if (host === 'mail.wushan.cn' && cleanPath === '/drafts' && !has('mailDraftsOpen')) {
+    el.innerHTML = `<div class="page site-mail">
+      <div class="mail-layout">
+        <div class="mail-side"><div data-nav="mail.wushan.cn/inbox" style="cursor:pointer">收件箱</div><div class="on">草稿箱</div></div>
+        <div class="mail-body" style="text-align:center">
+          <h3 style="margin:18px 0 6px">草稿箱已加密</h3>
+          <div class="muted-note">林晚设置了访问密码。</div>
+          <input id="maildraft-pwd" type="password" placeholder="密码" autocomplete="off" style="padding:10px;width:230px;font-size:15px;margin:12px 0 0">
+          <div class="login-err" id="maildraft-err"></div>
+          <button class="btn red" data-action="maildraft-login">解 锁</button>
+          ${has('hintsOn') ? '<div class="hint-line" style="text-align:left;margin-top:14px">提示：她说密码还是老样子——《身份》草稿里写过。</div>' : ''}
+        </div>
+      </div>
+    </div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (host === '2008.wushan.cn' && cleanPath === '/confidential/20080312' && !isDiscovered('k2')) denied = '该页面需要案卷权限。先找到第二份笔录。';
+  if (host === 'cloud.linwan.cn' && (cleanPath === '/files' || cleanPath.startsWith('/file/')) && !has('cloudOpen')) denied = '需要访问密码。';
+  if (host === 'police.wushan.cn' && cleanPath.startsWith('/case/') && !has('archiveOpen')) denied = '需要档案查询权限。';
+  if (host === 'mail.wushan.cn' && cleanPath === '/mail/thanks' && !has('draftsRead')) denied = '这封邮件还不存在。';
+  if (host === 'den.wuyu.net' && !has('darkUnlocked')) denied = '加密日志需要暗网入口。先找到雨巷。';
+  if (host === 'mirror.yuxiang2026.net' && !has('darkUnlocked')) denied = '旧版镜像需要暗网入口。';
+  if (denied) {
+    el.innerHTML = `<div class="site-404"><div style="font-size:44px">403</div><div>${esc(denied)}</div><div class="muted-note" style="margin-top:16px">你正在接近一个不存在的页面。</div></div>`;
+    finishRender(el, host);
+    return;
+  }
+  if (page) {
+    el.innerHTML = page.html ? page.html({ q }) : '';
+    if (page.mount) page.mount(el);
+    const onl = el.querySelector('[data-rand-online]');
+    if (onl) onl.textContent = '在线：' + (14 + Math.floor(Math.random() * 18)) + ' 人';
+  } else {
+    el.innerHTML = render404(host, cleanPath);
+  }
+  finishRender(el, host);
+}
+
+SITES['police.wushan.cn'].pages['/login'].html = () => `
+  <div class="page site-archive">
+    ${has('wrong_archive_3') ? '<div class="del-banner">⚠ 访问记录已上传。</div>' : ''}
+    <div class="archive-head">雾山县公安局 · 案件档案查询系统</div>
+    <div class="login-box">
+      <h3>档案查询</h3>
+      <div class="muted-note" style="margin-top:8px">请输入案卷相关信息（数字密码）</div>
+      <input id="pwd-input" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="pwd-err"></div>
+      <button class="btn red" data-action="archive-login">查 询</button>
+      ${has('hintsOn') ? '<div class="hint-line" style="text-align:left;margin-top:14px">提示：档案只接受数字。旧博客《苏承老师》里，藏着打开它的钥匙。</div>' : ''}
+    </div>
+  </div>`;
+SITES['cloud.linwan.cn'].pages['/login'].html = () => `
+  <div class="page site-cloud">
+    ${has('wrong_cloud_3') ? '<div class="del-banner">⚠ 访问记录已上传。</div>' : ''}
+    <div class="cloud-head">拾光云 · 林晚的私人云盘</div>
+    <div class="login-box">
+      <h3>请输入访问密码</h3>
+      <input id="cloud-pwd" type="password" placeholder="密码" autocomplete="off">
+      <div class="login-err" id="cloud-err"></div>
+      <button class="btn red" data-action="cloud-login">进 入</button>
+      ${has('hintsOn') ? '<div class="hint-line" style="text-align:left;margin-top:14px">提示：老友群里，阿青提过这个密码的来历。</div>' : ''}
+    </div>
+  </div>`;
+
+const __oa4 = openApp;
+openApp = function (app) {
+  __oa4(app);
+  if (app === 'settings') {
+    const ws = winState.settings;
+    if (ws && ws.el) {
+      const body = ws.el.querySelector('.win-body');
+      if (body) {
+        const old = body.querySelector('#set-card');
+        if (old) old.remove();
+        const card = document.createElement('div');
+        card.id = 'set-card';
+        card.style.cssText = 'background:#1a1d23;border:1px solid #3a3f49;border-radius:8px;padding:14px 18px;margin-top:16px;color:#e6eaf1;font-size:14px;line-height:2.4';
+        card.innerHTML = `<div style="font-size:13px;color:#8fa3c4;margin-bottom:6px">设 置</div>
+          <p>提示：<button class="btn red" id="set-hints">${has('hintsOn') ? '关闭' : '开启'}</button><span style="margin-left:10px;color:#aab3c1">密码页提示默认关闭，开启后显示</span></p>
+          <p>字号：<button class="btn red" id="set-large">${has('largeText') ? '标准' : '大字号'}</button></p>`;
+        body.appendChild(card);
+        body.querySelector('#set-hints').onclick = toggleHints;
+        body.querySelector('#set-large').onclick = toggleLarge;
+      }
+    }
+  }
+};
+
 /* ============ 恐怖效果 ============ */
 function glitchPulse() {
   const g = $('glitch');
